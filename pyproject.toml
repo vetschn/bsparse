@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[tool.isort]
+profile = "black"
+
+[project]
+name = "bsparse"
+authors = [{ name = "Nicolas Vetsch", email = "vetschn@iis.ee.ethz.ch" }]
+description = "Block Sparse Matrices for scientific computing."
+license = { file = "LICENSE" }
+classifiers = [
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering",
+]
+keywords = ["Nano-TCAD", "Sparse Matrices", "Block Matrices"]
+dynamic = ["version"]
+requires-python = ">=3.10"
+dependencies = [
+    "numpy>=1.23.5",
+    "scipy",
+]
+
+[project.urls]
+Code = "https://github.com/vetschn/bsparse"
+
+[tool.setuptools.dynamic]
+version = { attr = "bsparse.__about__.__version__" }
+
+[tool.pytest.ini_options]
+addopts = ["--import-mode=importlib"]
+testpaths = ["tests"]
