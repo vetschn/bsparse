@@ -18,3 +18,7 @@ lint: format
 # Runs all tests.
 test:
 	pytest --cov=src/bsparse --cov-report=term --cov-report=xml tests/
+
+# Builds the documentation.
+doc: lint
+	cd doc && make html
