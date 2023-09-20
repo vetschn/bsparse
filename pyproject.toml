@@ -8,7 +8,7 @@ profile = "black"
 [project]
 name = "bsparse"
 authors = [{ name = "Nicolas Vetsch", email = "vetschn@iis.ee.ethz.ch" }]
-description = "Block Sparse Matrices for scientific computing."
+description = "Block sparse matrices for scientific computing."
 license = { file = "LICENSE" }
 classifiers = [
     "Intended Audience :: Science/Research",
