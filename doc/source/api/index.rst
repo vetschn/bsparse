@@ -5,5 +5,17 @@
 API Reference
 =============
 
-.. toctree::
-    :maxdepth: 2
+Sparse Matrix Containers
+------------------------
+
+.. currentmodule:: bsparse
+
+.. autosummary::
+    :toctree: generated/
+    
+    CSR
+    DIA
+    COO
+
+Useful Functions
+----------------

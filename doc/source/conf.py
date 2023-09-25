@@ -143,7 +143,7 @@ html_context = {"default_mode": "light"}
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
-# html_logo = None
+html_logo = "_static/logo.png"
 
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
@@ -200,7 +200,7 @@ html_use_modindex = True
 # html_use_opensearch = ''
 
 # This is the file name suffix for HTML files (e.g. ".xhtml").
-# html_file_suffix = None
+html_file_suffix = ".html"
 
 # Language to be used for generating the HTML full-text search index.
 # Sphinx supports the following languages:
@@ -307,3 +307,11 @@ intersphinx_mapping = {
     "matplotlib": ("https://matplotlib.org/stable", None),
     "numpy": ("https://numpy.org/doc/stable/", None),
 }
+
+# -- Autosummary ----------------------------------------------------------
+
+autosummary_generate = True
+
+# -- Autodoc --------------------------------------------------------------
+
+autodoc_typehints = "none"
