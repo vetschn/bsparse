@@ -4,7 +4,11 @@
     :maxdepth: 1
     :hidden:
 
+    User Guide <guide/index>
     API Reference <api/index>
+
+bsparse
+=======
 
 Welcome to the documentation for bsparse!
 
@@ -20,13 +24,12 @@ What bsparse is:
   equivalent dense 2D array representation). As such, bsparse data
   containers can store ...
 
-  - ... scalars
   - ... dense matrices (of arbitrary shape and type).
+  - ... scipy.sparse matrices (of arbitrary shape and type).
   - ... bsparse matrices (of arbitrary shape and type).
   - ... a mixture of all three with the caveat that matrix rows and
     columns ***must not be ragged***. (Matrix sub-blocks have to be
     aligned along both axes.)
-  - (Make examples)
 
 - bsparse Matrices implement...
 
