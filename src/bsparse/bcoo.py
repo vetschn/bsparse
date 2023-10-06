@@ -4,7 +4,7 @@ import numpy as np
 import scipy.sparse as sp
 from numpy.typing import ArrayLike
 
-from bsparse._base import BSparse
+from bsparse.bsparse import BSparse
 
 
 class BCOO(BSparse):

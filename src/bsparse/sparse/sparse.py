@@ -3,7 +3,6 @@ from numbers import Number
 
 import numpy as np
 import scipy.sparse as sp
-from numpy.typing import ArrayLike
 
 
 class Sparse(ABC):
@@ -170,7 +169,7 @@ class Sparse(ABC):
 
     @classmethod
     @abstractmethod
-    def from_array(cls, arr: ArrayLike, symmetry: str | None) -> "Sparse":
+    def from_array(cls, arr: np.ndarray, symmetry: str | None) -> "Sparse":
         """Creates a sparse matrix from a dense `numpy.ndarray`."""
         ...
 

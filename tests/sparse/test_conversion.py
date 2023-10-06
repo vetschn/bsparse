@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 
 from bsparse.sparse import COO, CSR, DIA
-from bsparse.sparse._base import Sparse
+from bsparse.sparse.sparse import Sparse
 
 
 @pytest.mark.parametrize(

@@ -5,7 +5,7 @@ import numpy as np
 import scipy.sparse as sp
 from numpy.typing import ArrayLike
 
-from bsparse.sparse._base import Sparse
+from bsparse.sparse.sparse import Sparse
 
 
 class DIA(Sparse):

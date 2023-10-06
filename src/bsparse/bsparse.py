@@ -1,10 +1,14 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod
+from numbers import Number
+from typing import Any
 
 import numpy as np
 import scipy.sparse as sp
 
+from bsparse.sparse import Sparse
 
-class BSparse(ABC):
+
+class BSparse(Sparse):
     """Base class for bsparse matrices."""
 
     ndim = 2
@@ -25,54 +29,54 @@ class BSparse(ABC):
     @abstractmethod
     def __getitem__(
         self, key: int | slice | tuple[int | slice, int | slice]
-    ) -> "np.ndarray | int | float | complex | BSparse":
+    ) -> "np.ndarray | BSparse":
         """Returns a matrix element or a submatrix."""
         ...
 
     @abstractmethod
     def __setitem__(
         self,
-        key: tuple[int | slice, int | slice],
-        value: "np.ndarray | int | float | complex | BSparse",
+        key: tuple[int, int],
+        value: Any,
     ):
-        """Sets a matrix element or a submatrix."""
+        """Sets a matrix element."""
         ...
 
     @abstractmethod
-    def __add__(self, other: "np.number | BSparse") -> "BSparse":
+    def __add__(self, other: "Number | BSparse") -> "BSparse":
         """Adds another matrix or a scalar to this matrix."""
         ...
 
-    def __radd__(self, other: "np.number | BSparse") -> "BSparse":
+    def __radd__(self, other: "Number | BSparse") -> "BSparse":
         """Adds this matrix to another matrix or a scalar."""
         return self.__add__(other)
 
     @abstractmethod
-    def __sub__(self, other: "np.number | BSparse") -> "BSparse":
+    def __sub__(self, other: "Number | BSparse") -> "BSparse":
         """Subtracts another matrix or a scalar from this matrix."""
         ...
 
     @abstractmethod
-    def __rsub__(self, other: "np.number | BSparse") -> "BSparse":
+    def __rsub__(self, other: "Number | BSparse") -> "BSparse":
         """Subtracts this matrix from another matrix or a scalar."""
         ...
 
     @abstractmethod
-    def __mul__(self, other: "np.number | BSparse") -> "BSparse":
+    def __mul__(self, other: "Number | BSparse") -> "BSparse":
         """Multiplies another matrix or a scalar by this matrix."""
         ...
 
-    def __rmul__(self, other: "np.number | BSparse") -> "BSparse":
+    def __rmul__(self, other: "Number | BSparse") -> "BSparse":
         """Multiplies this matrix by another matrix or a scalar."""
         return self.__mul__(other)
 
     @abstractmethod
-    def __truediv__(self, other: "np.number | BSparse") -> "BSparse":
+    def __truediv__(self, other: "Number | BSparse") -> "BSparse":
         """Divides this matrix by another matrix or a scalar."""
         ...
 
     @abstractmethod
-    def __rtruediv__(self, other: "np.number | BSparse") -> "BSparse":
+    def __rtruediv__(self, other: "Number | BSparse") -> "BSparse":
         """Divides another matrix or a scalar by this matrix."""
         ...
 
@@ -150,22 +154,22 @@ class BSparse(ABC):
         ...
 
     @abstractmethod
-    def to_array(self) -> np.ndarray:
+    def toarray(self) -> np.ndarray:
         """Converts the matrix to a dense `numpy.ndarray`."""
         ...
 
     @abstractmethod
-    def to_coo(self) -> "BSparse":
+    def tocoo(self) -> "BSparse":
         """Converts the matrix to a ``COO`` format."""
         ...
 
     @abstractmethod
-    def to_csr(self) -> "BSparse":
+    def tocsr(self) -> "BSparse":
         """Converts the matrix to a ``CSR`` format."""
         ...
 
     @abstractmethod
-    def to_dia(self) -> "BSparse":
+    def todia(self) -> "BSparse":
         """Converts the matrix to a ``DIA`` format."""
         ...
 
