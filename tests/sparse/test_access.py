@@ -297,7 +297,7 @@ def test_diagonal(sparse_type: Sparse, shape: tuple[int, int], offset: int):
         pytest.param(DIA, id="DIA"),
     ],
 )
-def test_copy(sparse_type, shape):
+def test_copy(sparse_type: Sparse, shape: tuple[int, int]):
     """Tests the `.copy()` method."""
     arr = np.random.random(shape) + 1j * np.random.random(shape)
 
@@ -306,3 +306,31 @@ def test_copy(sparse_type, shape):
 
     assert np.allclose(mat.toarray(), copied_mat.toarray())
     assert mat.data is not copied_mat.data
+
+
+@pytest.mark.parametrize(
+    "dtype",
+    [
+        pytest.param(float, id="float"),
+        pytest.param(complex, id="complex"),
+    ],
+)
+@pytest.mark.parametrize(
+    "sparse_type",
+    [
+        pytest.param(COO, id="COO"),
+        pytest.param(CSR, id="CSR"),
+        pytest.param(DIA, id="DIA"),
+    ],
+)
+def test_astype(sparse_type: Sparse, dtype: tuple[int, int]):
+    """Tests the `.astype()` method."""
+    arr = np.random.randint(10, size=(5, 5))
+
+    mat = sparse_type.from_array(arr)
+    casted_mat = mat.astype(dtype)
+
+    assert np.allclose(mat.toarray(), casted_mat.toarray())
+    assert mat.data is not casted_mat.data
+    assert mat.dtype != casted_mat.dtype
+    assert casted_mat.dtype == dtype

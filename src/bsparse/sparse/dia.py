@@ -350,6 +350,17 @@ class DIA(Sparse):
         )
         return new
 
+    def astype(self, dtype: np.dtype) -> "DIA":
+        """Returns a copy of the matrix with a different data type."""
+        new = DIA(
+            self.offsets.copy(),
+            self.data.copy(),
+            self.shape,
+            dtype,
+            self.symmetry,
+        )
+        return new
+
     def _get_diag_indices(self, offset: int) -> tuple[np.ndarray, np.ndarray]:
         """Returns the indices of the k-th diagonal."""
         start = (-offset) * self.shape[1] if offset < 0 else offset

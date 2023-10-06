@@ -430,6 +430,18 @@ class CSR(Sparse):
         )
         return new
 
+    def astype(self, dtype: np.dtype) -> "CSR":
+        """Returns a copy of the matrix with a different data type."""
+        new = CSR(
+            self.rowptr.copy(),
+            self.cols.copy(),
+            self.data.copy(),
+            self.shape,
+            dtype,
+            self.symmetry,
+        )
+        return new
+
     def toarray(self) -> np.ndarray:
         """Converts the matrix to a dense `numpy.ndarray`."""
         arr = np.zeros(self.shape, dtype=self.dtype)

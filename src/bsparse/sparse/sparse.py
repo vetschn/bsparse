@@ -143,6 +143,11 @@ class Sparse(ABC):
         ...
 
     @abstractmethod
+    def astype(self, dtype: np.dtype) -> "Sparse":
+        """Converts the matrix to the given data type."""
+        ...
+
+    @abstractmethod
     def toarray(self) -> np.ndarray:
         """Converts the matrix to a dense `numpy.ndarray`."""
         ...

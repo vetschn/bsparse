@@ -406,6 +406,18 @@ class COO(Sparse):
         )
         return new
 
+    def astype(self, dtype: np.dtype) -> "COO":
+        """Returns a copy of the matrix with a different data type."""
+        new = COO(
+            self.rows.copy(),
+            self.cols.copy(),
+            self.data.copy(),
+            self.shape,
+            dtype,
+            self.symmetry,
+        )
+        return new
+
     def toarray(self) -> np.ndarray:
         """Converts the matrix to a dense `numpy.ndarray`."""
         arr = np.zeros(self.shape, dtype=self.dtype)
