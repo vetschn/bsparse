@@ -1,6 +1,4 @@
 from abc import abstractmethod
-from numbers import Number
-from typing import Any
 
 import numpy as np
 import scipy.sparse as sp
@@ -26,103 +24,11 @@ class BSparse(Sparse):
         """Returns a string representation of the matrix."""
         return repr(self)
 
-    @abstractmethod
-    def __getitem__(
-        self, key: int | slice | tuple[int | slice, int | slice]
-    ) -> "np.ndarray | BSparse":
-        """Returns a matrix element or a submatrix."""
-        ...
-
-    @abstractmethod
-    def __setitem__(
-        self,
-        key: tuple[int, int],
-        value: Any,
-    ):
-        """Sets a matrix element."""
-        ...
-
-    @abstractmethod
-    def __add__(self, other: "Number | BSparse") -> "BSparse":
-        """Adds another matrix or a scalar to this matrix."""
-        ...
-
-    def __radd__(self, other: "Number | BSparse") -> "BSparse":
-        """Adds this matrix to another matrix or a scalar."""
-        return self.__add__(other)
-
-    @abstractmethod
-    def __sub__(self, other: "Number | BSparse") -> "BSparse":
-        """Subtracts another matrix or a scalar from this matrix."""
-        ...
-
-    @abstractmethod
-    def __rsub__(self, other: "Number | BSparse") -> "BSparse":
-        """Subtracts this matrix from another matrix or a scalar."""
-        ...
-
-    @abstractmethod
-    def __mul__(self, other: "Number | BSparse") -> "BSparse":
-        """Multiplies another matrix or a scalar by this matrix."""
-        ...
-
-    def __rmul__(self, other: "Number | BSparse") -> "BSparse":
-        """Multiplies this matrix by another matrix or a scalar."""
-        return self.__mul__(other)
-
-    @abstractmethod
-    def __truediv__(self, other: "Number | BSparse") -> "BSparse":
-        """Divides this matrix by another matrix or a scalar."""
-        ...
-
-    @abstractmethod
-    def __rtruediv__(self, other: "Number | BSparse") -> "BSparse":
-        """Divides another matrix or a scalar by this matrix."""
-        ...
-
-    @abstractmethod
-    def __neg__(self) -> "BSparse":
-        """Negates this matrix."""
-        ...
-
-    @abstractmethod
-    def __matmul__(self, other: "BSparse") -> "BSparse":
-        """Multiplies this matrix by another matrix."""
-        ...
-
-    @abstractmethod
-    def __rmatmul__(self, other: "BSparse") -> "BSparse":
-        """Multiplies another matrix by this matrix."""
-        ...
-
-    @property
-    @abstractmethod
-    def T(self) -> "BSparse":
-        """The transpose of the matrix."""
-        ...
-
-    @property
-    @abstractmethod
-    def H(self) -> "BSparse":
-        """The conjugate transpose of the matrix."""
-        ...
-
-    @property
-    @abstractmethod
-    def symmetry(self) -> str | None:
-        """The symmetry of the matrix."""
-        ...
-
     @property
     @abstractmethod
     def bshape(self) -> tuple[int, int]:
         """The shape of the sparse container."""
         ...
-
-    @property
-    def shape(self) -> tuple[int, int]:
-        """The shape of the equivalent dense matrix."""
-        return (self.row_sizes.sum(), self.col_sizes.sum())
 
     @property
     @abstractmethod
@@ -137,25 +43,14 @@ class BSparse(Sparse):
         ...
 
     @property
-    @abstractmethod
-    def bnnz(self) -> int:
-        """The number of non-zero constituents saved in the container."""
-        ...
+    def shape(self) -> tuple[int, int]:
+        """The shape of the equivalent dense matrix."""
+        return (self.row_sizes.sum(), self.col_sizes.sum())
 
     @property
     @abstractmethod
-    def nnz(self) -> int:
-        """The total number of non-zero elements in the matrix."""
-        ...
-
-    @abstractmethod
-    def copy(self) -> "BSparse":
-        """Returns a copy of the matrix."""
-        ...
-
-    @abstractmethod
-    def toarray(self) -> np.ndarray:
-        """Converts the matrix to a dense `numpy.ndarray`."""
+    def bnnz(self) -> int:
+        """The number of non-zero constituents saved in the container."""
         ...
 
     @abstractmethod
@@ -180,12 +75,12 @@ class BSparse(Sparse):
 
     @classmethod
     @abstractmethod
-    def from_array(cls, arr: np.ndarray) -> "BSparse":
+    def from_array(cls, arr: np.ndarray, sizes: tuple[list, list]) -> "BSparse":
         """Creates a sparse matrix from a dense `numpy.ndarray`."""
         ...
 
     @classmethod
     @abstractmethod
-    def from_spmatrix(cls, mat: sp.spmatrix) -> "BSparse":
+    def from_spmatrix(cls, mat: sp.spmatrix, sizes: tuple[list, list]) -> "BSparse":
         """Creates a sparse matrix from a `scipy.sparse.spmatrix`."""
         ...

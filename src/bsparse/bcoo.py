@@ -5,6 +5,7 @@ import scipy.sparse as sp
 from numpy.typing import ArrayLike
 
 from bsparse.bsparse import BSparse
+from bsparse import sparse
 
 
 class BCOO(BSparse):
@@ -12,9 +13,9 @@ class BCOO(BSparse):
 
     The ``BCOO`` class represents a sparse matrix using three arrays:
 
-    - ``rows`` contains the row coordinates of the non-zero elements.
-    - ``cols`` contains the column coordinates of the non-zero elements.
-    - ``data`` contains the values of the non-zero elements.
+    * ``rows``: contains the row coordinates of the non-zero elements.
+    * ``cols``: contains the column coordinates of the non-zero elements.
+    * ``data``: contains the values of the non-zero elements.
 
     Upon creation, the matrix is sorted (lexicographically) by rows and
     columns. Duplicate elements are not allowed.
@@ -27,25 +28,20 @@ class BCOO(BSparse):
         The column coordinates of the non-zero elements.
     data : array_like
         The values of the non-zero constituents. This is an array of
-        dtype object.
+        dtype object. Each element of the array can be either a 2D dense
+        array, a scipy sparse matrix, or any bsparse matrix.
     bshape : tuple, optional
         The shape of the matrix container. If not given, it is inferred
         from ``rows`` and ``cols``.
-    shape : tuple, optional
-        The shape of the matrix. If not given, it is inferred from the
-        cumulative shape of the matrix elements.
+    dtype : dtype, optional
+        The data type of the matrix elements. If not given, it is
+        inferred from ``data``.
     symmetry : str, optional
-        The symmetry of the matrix. If not given, it is assumed to be
-        ``None``. Possible values are:
-
-        - ``None``
-        - ``"symmetric"``
-        - ``"hermitian"``
-        - ``"skew-symmetric"``
-        - ``"skew-hermitian"``
-
-        Upon applying symmetry, the lower triangular part of the matrix
-        is discarded.
+        The symmetry of the matrix. If not given, no symmetry is
+        assumed. This is only applicable for square matrices, where
+        possible values are ``'symmetric'`` and ``'hermitian'``. Note
+        that when setting a symmetry, the lower triangular part of the
+        matrix is discarded.
 
     """
 
@@ -55,235 +51,320 @@ class BCOO(BSparse):
         cols: ArrayLike,
         data: ArrayLike,
         bshape: tuple[int, int] | None = None,
+        dtype: np.dtype | None = None,
         symmetry: str | None = None,
     ) -> None:
         """Initializes a ``BCOO`` matrix."""
         self.rows = np.asarray(rows, dtype=int)
         self.cols = np.asarray(cols, dtype=int)
-        self.data = np.asarray(data, dtype=object)
 
-        if bshape is None:
-            bshape = (self.rows.max() + 1, self.cols.max() + 1)
-        if self.rows.size != 0:  # Allows empty matrices.
-            if self.rows.max() >= bshape[0] or self.cols.max() >= bshape[1]:
-                raise ValueError("Matrix has out-of-bounds indices.")
-        self._bshape = bshape
+        data = list(data)
+        self.data = self._validate_data(data)
 
-        self._check_data()
-
-        self._symmetry = symmetry
-        if symmetry in ("symmetric", "hermitian", "skew-symmetric", "skew-hermitian"):
-            if self.bshape[0] != self.bshape[1]:
-                raise ValueError("Symmetry is only applicable to square matrices.")
-            skew = -1 if symmetry.startswith("skew") else 1
-            if symmetry.endswith("symmetric"):
-
-                def _map(value):
-                    if np.isscalar(value):
-                        return skew * value
-                    return self * value.T
-
-                self._symmetry_map = _map
-
-            if symmetry.endswith("hermitian"):
-
-                def _map(value):
-                    if np.isscalar(value):
-                        return skew * np.conjugate(value)
-                    if isinstance(value, np.ndarray):
-                        return skew * value.conj().T
-                    return self * value.H
-
-                self._symmetry_map = _map
-
-            self._discard_subdiagonal()
-        elif symmetry is not None:
-            raise ValueError(
-                "Invalid symmetry. Possible values are: None, symmetric, "
-                "hermitian, skew-symmetric, skew-hermitian."
-            )
-
-        self.sort_indices()
-
-    def _check_data(self) -> None:
-        """Checks that the data adheres to the specification."""
-        # Check that there are no duplicate elements.
-        if self.data.size != len(set(zip(self.rows, self.cols))):
+        if len(self.data) != len(set(zip(self.rows, self.cols))):
             raise ValueError("Matrix has duplicate elements.")
 
-        # Check that the matrix elements are scalars or two dimensional.
-        for b in self.data:
-            if not np.isscalar(b) and b.ndim != 2:
-                raise ValueError("Matrix elements must be scalars or two dimensional.")
+        if dtype is None:
+            dtype = np.result_type(*[b.dtype for b in self.data])
+        self.data = [b.astype(dtype) for b in self.data]
+        self._dtype = dtype
+
+        self._bshape = self._validate_bshape(bshape)
+        self._symmetry = self._validate_symmetry(symmetry)
+        self._sort_indices()
+
+        self._row_sizes = self.row_sizes
+        self._col_sizes = self.col_sizes
+
+    def _validate_data(self, data: ArrayLike) -> list:
+        """Validates the data blocks of the matrix."""
+        # Check that the matrix blocks allow an equivalent array representation.
+        for b in data:
+            if b.ndim != 2:
+                raise ValueError("Matrix blocks must be two dimensional.")
+            if not hasattr(b, "size"):
+                raise ValueError("Matrix blocks must have a `size` attribute.")
+            if not hasattr(b, "shape"):
+                raise ValueError("Matrix blocks must have a `shape` attribute.")
+            if not hasattr(b, "dtype"):
+                raise ValueError("Matrix blocks must have a `dtype` attribute.")
+            if not hasattr(b, "astype"):
+                raise ValueError("Matrix blocks must implement an `astype` method.")
 
         # Check that the matrix rows are aligned.
         for row in self.rows:
-            data = self.data[self.rows == row]
-            if len(set([1 if np.isscalar(b) else b.shape[0] for b in data])) != 1:
+            row_data = [b for b, r in zip(data, self.rows) if r == row]
+            if len(set([b.shape[0] for b in row_data])) != 1:
                 raise ValueError("Matrix rows are not aligned.")
 
         # Check that the matrix columns are aligned.
         for col in self.cols:
-            data = self.data[self.cols == col]
-            if len(set([1 if np.isscalar(b) else b.shape[0] for b in data])) != 1:
+            col_data = [b for b, c in zip(data, self.cols) if c == col]
+            if len(set([b.shape[1] for b in col_data])) != 1:
                 raise ValueError("Matrix columns are not aligned.")
+
+        return data
+
+    def _validate_bshape(self, bshape: tuple[int, int] | None) -> tuple[int, int]:
+        """Validates the bshape of the matrix."""
+        if bshape is None:
+            if len(self.data) == 0:
+                raise ValueError("Cannot instantiate empty matrix without bshape.")
+            return (self.rows.max() + 1, self.cols.max() + 1)
+        if len(self.data) != 0:  # Allows empty matrices.
+            if self.rows.max() >= bshape[0] or self.cols.max() >= bshape[1]:
+                raise ValueError("Matrix has out-of-bounds indices.")
+        if bshape[0] < 0 or bshape[1] < 0:
+            raise ValueError("Matrix has negative bshape.")
+        return bshape
+
+    def _validate_symmetry(self, symmetry: str | None) -> str | None:
+        """Validates the symmetry of the matrix."""
+        if symmetry is None:
+            return symmetry
+        if symmetry not in ("symmetric", "hermitian"):
+            raise ValueError("Invalid symmetry.")
+        if self.bshape[0] != self.bshape[1]:
+            raise ValueError("Symmetry is only applicable to square matrices.")
+
+        self._discard_subdiagonal()
+
+        return symmetry
 
     def _discard_subdiagonal(self) -> None:
         """Takes symmetry into account by removing the lower triangular part."""
         if any(self.rows > self.cols):
-            warn("Matrix is not upper triangular. Lower triangular part is discarded.")
+            warn(
+                "Symmetric matrix is not upper triangular. "
+                "Lower triangular part is discarded."
+            )
             ind = self.rows <= self.cols
             self.rows = self.rows[ind]
             self.cols = self.cols[ind]
-            self.data = self.data[ind]
+            self.data = [b for b, i in zip(self.data, ind) if i]
 
-    def _unsign_indices(self, row: int, col: int) -> tuple:
+    def _sort_indices(self) -> None:
+        """Sorts the matrix by rows and columns."""
+        order = np.lexsort((self.cols, self.rows))
+        self.rows = self.rows[order]
+        self.cols = self.cols[order]
+        self.data = [self.data[i] for i in order]
+
+    def _unsign_index(self, row: int, col: int) -> tuple:
         """Adjusts the sign to allow negative indices and checks bounds."""
-        # Unsign the indices.
-        if row < 0:
-            row = self.bshape[0] + row
-        if col < 0:
-            col = self.bshape[1] + col
+        row = self.bshape[0] + row if row < 0 else row
+        col = self.bshape[1] + col if col < 0 else col
         if not (0 <= row < self.bshape[0] and 0 <= col < self.bshape[1]):
             raise IndexError("Block index out of bounds.")
 
         return row, col
 
+    def _getitem_symmetry(self, row: int | slice, col: int | slice):
+        """Returns the element at the given coordinates."""
+        if isinstance(row, int) and isinstance(col, int):
+            row, col = self._unsign_index(row, col)
+            if row <= col:
+                ind = np.nonzero((self.rows == row) & (self.cols == col))[0]
+                if ind.size == 0:
+                    return sparse.zeros(
+                        (self.row_sizes[row], self.col_sizes[col]), self.dtype
+                    )
+                return self.data[ind[0]]
+
+            if self.symmetry == "symmetric":
+                return self[col, row]
+            if self.symmetry == "hermitian":
+                return self[col, row].conjugate()
+
+        if isinstance(row, int):
+            row = slice(row, row + 1)
+        if isinstance(col, int):
+            col = slice(col, col + 1)
+
+        rows = np.arange(*row.indices(self.bshape[0]))
+        cols = np.arange(*col.indices(self.bshape[1]))
+        if len(rows) == 0 or len(cols) == 0:
+            raise IndexError("Slice index out of bounds.")
+        rows = np.array([self._unsign_index(r, 0)[0] for r in rows])
+        cols = np.array([self._unsign_index(0, c)[1] for c in cols])
+
+        row_step = row.step if row.step is not None else 1
+        col_step = col.step if col.step is not None else 1
+
+        if row.start == col.start and row.stop == col.stop and row_step == col_step:
+            # If the slice is symmetric, we need to return a symmetric matrix.
+            mask = np.isin(self.rows, rows) & np.isin(self.cols, cols)
+            submatrix = BCOO(
+                (self.rows[mask] - rows[0]) // row_step,
+                (self.cols[mask] - cols[0]) // col_step,
+                [b for b, m in zip(self.data, mask) if m],
+                bshape=(len(rows), len(cols)),
+                dtype=self.dtype,
+                symmetry=self.symmetry,
+            )
+            return submatrix
+
+        submatrix = BCOO([], [], [], bshape=(len(rows), len(cols)), dtype=self.dtype)
+        for i, j in np.ndindex(submatrix.bshape):
+            value = self[int(rows[i]), int(cols[j])]
+            if isinstance(value, (sparse.Sparse, sp.spmatrix)) and value.nnz == 0:
+                continue
+            if isinstance(value, np.ndarray) and np.all(value == 0):
+                continue
+            submatrix.rows = np.append(submatrix.rows, (rows[i] - rows[0]) // row_step)
+            submatrix.cols = np.append(submatrix.cols, (cols[j] - cols[0]) // col_step)
+            submatrix.data = np.append(submatrix.data, value)
+        return submatrix
+
+    def _getslice(self, row: slice, col: slice):
+        """Returns a submatrix."""
+        rows = np.arange(*row.indices(self.bshape[0]))
+        cols = np.arange(*col.indices(self.bshape[1]))
+        if len(rows) == 0 or len(cols) == 0:
+            raise IndexError("Slice index out of bounds.")
+        rows = np.array([self._unsign_index(r, 0)[0] for r in rows])
+        cols = np.array([self._unsign_index(0, c)[1] for c in cols])
+        row_step = row.step if row.step is not None else 1
+        col_step = col.step if col.step is not None else 1
+        mask = np.isin(self.rows, rows) & np.isin(self.cols, cols)
+        submatrix = BCOO(
+            (self.rows[mask] - rows[0]) // row_step,
+            (self.cols[mask] - cols[0]) // col_step,
+            [b for b, m in zip(self.data, mask) if m],
+            bshape=(len(rows), len(cols)),
+            dtype=self.dtype,
+        )
+        return submatrix
+
     def __getitem__(
         self, key: int | slice | list | tuple
-    ) -> "np.ndarray | int | float | complex | BCOO":
+    ) -> "np.ndarray | sparse.Sparse | BSparse":
         """Returns a matrix element or a submatrix."""
         if isinstance(key, (int, slice)):
-            return self[key, :]
+            key = (key, slice(None))
 
-        if isinstance(key, list):
-            return [self[k] for k in key]
+        if not isinstance(key, tuple) or len(key) != 2:
+            raise IndexError("Invalid index")
 
-        if isinstance(key, tuple):
-            if len(key) != 2:
-                raise IndexError("Invalid number of indices.")
+        row, col = key
+        if not isinstance(row, (int, slice)) or not isinstance(col, (int, slice)):
+            raise IndexError("Invalid index")
 
-            row, col = key
-            if isinstance(row, int) and isinstance(col, int):
-                row, col = self._unsign_indices(row, col)
-                apply_symmetry_map = self.symmetry is not None and row > col
-                row, col = (col, row) if apply_symmetry_map else (row, col)
+        if self.symmetry is not None:
+            return self._getitem_symmetry(row, col)
 
-                value = self.data[self.rows == row & self.cols == col]
-                if value.size == 0:
-                    value = [np.zeros((self.row_sizes[row], self.col_sizes[col]))]
-                if apply_symmetry_map:
-                    value = self._symmetry_map(value)
-                return value[0]
-
-            if isinstance(row, int) and isinstance(col, slice):
-                cols = np.arange(*col.indices(self.bshape[1]))
-                trafos, __, cols = zip(*[self._unsign_indices(row, c) for c in cols])
-                row = self.rows == row
-                col = np.isin(self.cols, cols)
-                value = BCOO(
-                    np.zeros(len(cols), dtype=int),
-                    self.cols[col] - cols[0],
-                    [trafo(b) for trafo, b in zip(trafos, self.data[col])],
-                    (1, len(cols)),
+        if isinstance(row, int) and isinstance(col, int):
+            row, col = self._unsign_index(row, col)
+            ind = np.nonzero((self.rows == row) & (self.cols == col))[0]
+            if ind.size == 0:
+                return sparse.zeros(
+                    (self.row_sizes[row], self.col_sizes[col]), self.dtype
                 )
-                return value
+            return self.data[ind[0]]
 
-            if isinstance(row, slice) and isinstance(col, int):
-                rows = np.arange(*row.indices(self.bshape[0]))
-                trafos, rows, __ = zip(*[self._unsign_indices(r, col) for r in rows])
-                row = np.isin(self.rows, rows)
-                col = self.cols == col
-                value = BCOO(
-                    self.rows[row] - rows[0],
-                    np.zeros(len(rows), dtype=int),
-                    [trafo(b) for trafo, b in zip(trafos, self.data[row])],
-                    (len(rows), 1),
-                )
-                return value
+        if isinstance(row, int):
+            row = slice(row, row + 1)
+        if isinstance(col, int):
+            col = slice(col, col + 1)
 
-            if isinstance(row, slice) and isinstance(col, slice):
-                rows = np.arange(*row.indices(self.bshape[0]))
-                cols = np.arange(*col.indices(self.bshape[1]))
-                trafos, rows, cols = zip(
-                    *[self._unsign_indices(r, c) for r in rows for c in cols]
-                )
-                row = np.isin(self.rows, rows)
-                col = np.isin(self.cols, cols)
-                value = BCOO(
-                    self.rows[row] - rows[0],
-                    self.cols[col] - cols[0],
-                    [trafo(b) for trafo, b in zip(trafos, self.data[row & col])],
-                    (len(rows), len(cols)),
-                )
-                return value
-
-        raise NotImplementedError
+        return self._getslice(row, col)
 
     def __setitem__(
         self,
-        key: int | slice | tuple[int | slice, int | slice],
-        value: "np.ndarray | int | float | complex | BCOO",
+        key: tuple[int, int],
+        value: "np.ndarray | sparse.Sparse | BSparse",
     ):
         """Sets a matrix element or a submatrix."""
-        if not isinstance(value, (np.ndarray, int, float, complex, BCOO)):
-            raise TypeError("Value must be a matrix or a scalar.")
+        if not isinstance(key, tuple) or len(key) != 2:
+            raise IndexError("Invalid index.")
 
-        if isinstance(key, int):
-            row = self.rows == key
-            self.data[row] = value
+        if not isinstance(value, (np.ndarray, sparse.Sparse, BSparse)):
+            raise ValueError("Invalid value.")
+
+        value = value.astype(self.dtype)
+
+        row, col = key
+        if not isinstance(row, int) or not isinstance(col, int):
+            raise IndexError("Invalid index")
+
+        row, col = self._unsign_index(row, col)
+
+        if self.symmetry is not None and row > col:
+            if self.symmetry == "symmetric":
+                self[col, row] = value
+                return
+            if self.symmetry == "hermitian":
+                self[col, row] = value.conjugate()
+                return
+
+        all_zero = (
+            isinstance(value, (sparse.Sparse, sp.spmatrix))
+            and value.nnz == 0
+            or isinstance(value, np.ndarray)
+            and np.all(value == 0)
+        )
+
+        mask = (self.rows == row) & (self.cols == col)
+        if any(mask):
+            if all_zero:
+                mask = ~mask
+                self.rows = self.rows[mask]
+                self.cols = self.cols[mask]
+                self.data = [b for b, m in zip(self.data, mask) if m]
+                self._row_sizes[row] = 1
+                self._col_sizes[col] = 1
+                return
+            ind = np.nonzero(mask)[0][0]
+            self.data[ind] = value
+            self._row_sizes[row] = value.shape[0]
+            self._col_sizes[col] = value.shape[1]
             return
+
+        if all_zero:
+            return
+
+        self.rows = np.append(self.rows, row)
+        self.cols = np.append(self.cols, col)
+        self.data = self._validate_data(self.data + [value])
+        self._sort_indices()
+        self._row_sizes[row] = value.shape[0]
+        self._col_sizes[col] = value.shape[1]
 
     def __add__(self, other: "np.number | BSparse") -> "BCOO":
         """Adds another matrix or a scalar to this matrix."""
-        raise NotImplementedError
+        ...
 
     def __sub__(self, other: "np.number | BSparse") -> "BCOO":
         """Subtracts another matrix or a scalar from this matrix."""
-        raise NotImplementedError
+        ...
 
     def __rsub__(self, other: "np.number | BSparse") -> "BCOO":
         """Subtracts this matrix from another matrix or a scalar."""
-        raise NotImplementedError
+        ...
 
     def __mul__(self, other: "np.number | BSparse") -> "BCOO":
         """Multiplies another matrix or a scalar by this matrix."""
-        raise NotImplementedError
+        ...
 
     def __truediv__(self, other: "np.number | BSparse") -> "BCOO":
         """Divides this matrix by another matrix or a scalar."""
-        raise NotImplementedError
+        ...
 
     def __rtruediv__(self, other: "np.number | BSparse") -> "BCOO":
         """Divides another matrix or a scalar by this matrix."""
-        raise NotImplementedError
+        ...
 
     def __neg__(self) -> "BCOO":
         """Negates this matrix."""
-        raise NotImplementedError
+        ...
 
     def __matmul__(self, other: "BSparse") -> "BCOO":
         """Multiplies this matrix by another matrix."""
-        raise NotImplementedError
+        ...
 
     def __rmatmul__(self, other: "BSparse") -> "BCOO":
         """Multiplies another matrix by this matrix."""
-        raise NotImplementedError
-
-    @property
-    def T(self) -> "BSparse":
-        """The transpose of the matrix."""
-        raise NotImplementedError
-
-    @property
-    def H(self) -> "BSparse":
-        """The conjugate transpose of the matrix."""
-        raise NotImplementedError
-
-    @property
-    def symmetry(self) -> str | None:
-        """The symmetry of the matrix."""
-        return self._symmetry
+        ...
 
     @property
     def bshape(self) -> tuple[int, int]:
@@ -293,50 +374,133 @@ class BCOO(BSparse):
     @property
     def row_sizes(self) -> np.ndarray:
         """The sizes of the row elements."""
+        if hasattr(self, "_row_sizes"):
+            return self._row_sizes
+
         sizes = np.zeros(self.bshape[0], dtype=int)
         for row in range(self.bshape[0]):
-            data = self.data[self.rows == row]
-            if data.size == 0:
-                sizes[row] = 0
-            elif np.isscalar(data[0]):
+            row_data = [b for b, r in zip(self.data, self.rows) if r == row]
+            if len(row_data) == 0:
                 sizes[row] = 1
-            else:
-                sizes[row] = data[0].shape[0]
+                continue
+            sizes[row] = row_data[0].shape[0]
+
         return sizes
 
     @property
     def col_sizes(self) -> np.ndarray:
         """The sizes of the column elements."""
+        if hasattr(self, "_col_sizes"):
+            return self._col_sizes
+
         sizes = np.zeros(self.bshape[1], dtype=int)
         for col in range(self.bshape[1]):
-            data = self.data[self.cols == col]
-            if data.size == 0:
-                # No elements in this column.
-                sizes[col] = 0
-            elif hasattr(data[0], "shape"):
-                # Matrix elements.
-                sizes[col] = data[0].shape[1]
-            else:
-                # Scalar elements.
+            col_data = [b for b, c in zip(self.data, self.cols) if c == col]
+            if len(col_data) == 0:
                 sizes[col] = 1
+                continue
+            sizes[col] = col_data[0].shape[1]
+
         return sizes
+
+    @property
+    def dtype(self) -> np.dtype:
+        """The data type of the matrix elements."""
+        return self._dtype
 
     @property
     def bnnz(self) -> int:
         """The number of non-zero elements in the matrix."""
-        return self.data.size
+        return len(self.data)
 
     @property
     def nnz(self) -> int:
         """The number of non-zero elements in the matrix."""
-        raise NotImplementedError
+        return sum([b.size if hasattr(b, "size") else b.nnz for b in self.data])
 
-    def sort_indices(self) -> None:
-        """Sorts the matrix by rows and columns."""
-        order = np.lexsort((self.cols, self.rows))
-        self.rows = self.rows[order]
-        self.cols = self.cols[order]
-        self.data = self.data[order]
+    @property
+    def symmetry(self) -> str | None:
+        """The symmetry of the matrix."""
+        return self._symmetry
+
+    @property
+    def T(self) -> "BCOO":
+        """The transpose of the matrix."""
+        if self.symmetry == "symmetric":
+            return self
+        if self.symmetry == "hermitian":
+            return self.conjugate()
+        transpose = BCOO(
+            self.cols,
+            self.rows,
+            self.data,
+            (self.bshape[1], self.bshape[0]),
+            self.dtype,
+            self.symmetry,
+        )
+        return transpose
+
+    @property
+    def H(self) -> "BCOO":
+        """The conjugate transpose of the matrix."""
+        if self.symmetry == "hermitian":
+            return self
+        if self.symmetry == "symmetric":
+            return self.conjugate()
+        hermitian = BCOO(
+            self.cols,
+            self.rows,
+            [b.conj() for b in self.data],
+            (self.bshape[1], self.bshape[0]),
+            self.dtype,
+            self.symmetry,
+        )
+        return hermitian
+
+    def conjugate(self) -> "BCOO":
+        """The complex conjugate of the matrix."""
+        conjugate = BCOO(
+            self.rows,
+            self.cols,
+            [b.conjugate() for b in self.data],
+            self.bshape,
+            self.dtype,
+            self.symmetry,
+        )
+        return conjugate
+
+    def diagonal(self, offset: int = 0) -> np.ndarray:
+        """Returns the diagonal of the matrix."""
+        if not -self.bshape[0] < offset < self.bshape[1]:
+            raise ValueError("Offset out of bounds.")
+
+        if offset < 0:
+            if self.symmetry == "hermitian":
+                return np.conj(self.diagonal(-offset))
+            if self.symmetry == "symmetric":
+                return self.diagonal(-offset)
+
+        start = (-offset) * self.bshape[1] if offset < 0 else offset
+
+        rows = []
+        cols = []
+        for flat_ind in range(
+            start, self.bshape[0] * self.bshape[1], self.bshape[1] + 1
+        ):
+            if flat_ind // self.bshape[1] >= self.bshape[1] - offset:
+                break
+            rows.append(flat_ind // self.bshape[1])
+            cols.append(flat_ind % self.bshape[1])
+
+        diag = np.zeros(len(rows), dtype=object, ndmin=3)
+        for i, (row, col) in enumerate(zip(rows, cols)):
+            ind = np.nonzero((self.rows == row) & (self.cols == col))[0]
+            if ind.size == 0:
+                return sparse.zeros(
+                    (self.row_sizes[row], self.col_sizes[col]), self.dtype
+                )
+            return self.data[ind[0]]
+        return diag
 
     def copy(self) -> "BCOO":
         """Returns a copy of the matrix."""
@@ -344,46 +508,126 @@ class BCOO(BSparse):
             self.rows.copy(),
             self.cols.copy(),
             self.data.copy(),
-            self.shape,
+            self.bshape,
+            self.dtype,
+            self.symmetry,
         )
 
-    def to_coo(self) -> "BCOO":
-        """Converts the matrix to `COO` format."""
+    def astype(self, dtype: np.dtype) -> "BCOO":
+        """Returns a copy of the matrix with a different data type."""
+        new = BCOO(
+            self.rows.copy(),
+            self.cols.copy(),
+            self.data.copy(),
+            self.bshape,
+            dtype,
+            self.symmetry,
+        )
+        return new
+
+    def toarray(self) -> np.ndarray:
+        """Converts the matrix to a dense `numpy.ndarray`."""
+        arr = np.zeros(self.shape, dtype=self.dtype)
+        row_offsets = np.cumsum(self.row_sizes) - self.row_sizes
+        col_offsets = np.cumsum(self.col_sizes) - self.col_sizes
+
+        for row, col, b in zip(self.rows, self.cols, self.data):
+            arr[
+                row_offsets[row] : row_offsets[row] + b.shape[0],
+                col_offsets[col] : col_offsets[col] + b.shape[1],
+            ] = (
+                b if isinstance(b, np.ndarray) else b.toarray()
+            )
+
+        if self.symmetry == "symmetric":
+            arr += arr.T
+        if self.symmetry == "hermitian":
+            arr += arr.conj().T
+
+        return arr
+
+    def tocoo(self) -> "BCOO":
+        """Converts the matrix to `BCOO` format."""
         return self
 
-    def to_csr(self) -> "BSparse":
-        """Converts the matrix to `CSR` format."""
-        indptr = np.zeros(self.shape[0] + 1, dtype=int)
+    def tocsr(self) -> "BSparse":
+        """Converts the matrix to `BCSR` format."""
+        from bsparse.bcsr import BCSR
+
+        self._sort_indices()
+        rowptr = np.zeros(self.bshape[0] + 1, dtype=int)
         for row in self.rows:
-            indptr[row + 1] += 1
-        indptr = np.cumsum(indptr)
+            rowptr[row + 1] += 1
+        rowptr = np.cumsum(rowptr)
 
-        # from bsparse import BCSR
-        raise NotImplementedError
+        csr = BCSR(
+            rowptr,
+            self.cols,
+            self.data,
+            self.bshape,
+            self.dtype,
+            self.symmetry,
+        )
+        return csr
 
-    def to_dia(self) -> "BSparse":
-        """Converts the matrix to `DIA` format."""
-        # from bsparse import DIA
-        raise NotImplementedError
+    def todia(self) -> "BSparse":
+        """Converts the matrix to `BDIA` format."""
+        from bsparse.bdia import BDIA
 
-    def to_array(self) -> np.ndarray:
-        """Converts the matrix to a dense `numpy.ndarray`."""
-        raise NotImplementedError
+        offsets, offset_indices = np.unique(self.cols - self.rows, return_inverse=True)
+
+        if len(self.data) == 0:
+            data = np.zeros((0, 0), dtype=object)
+            return BDIA(offsets, data, self.bshape, self.dtype, self.symmetry)
+
+        data = np.zeros((len(offsets), self.cols.max() + 1), dtype=object)
+        data[offset_indices, self.cols] = self.data
+
+        return BDIA(offsets, data, self.bshape, self.dtype, self.symmetry)
 
     def save_npz(self, filename: str) -> None:
         """Saves the matrix to a `numpy.npz` file."""
-        raise NotImplementedError
+        np.savez_compressed(
+            filename,
+            format="bcoo",
+            rows=self.rows,
+            cols=self.cols,
+            data=self.data,
+            bshape=self.bshape,
+            dtype=self.dtype,
+            symmetry=self.symmetry,
+        )
 
     @classmethod
-    def from_array(cls, arr: ArrayLike, symmetry: str | None = None) -> "BCOO":
+    def from_array(
+        cls,
+        arr: np.ndarray,
+        sizes: tuple[ArrayLike, ArrayLike],
+        symmetry: str | None = None,
+    ) -> "BCOO":
         """Creates a `BCOO` matrix from a dense `numpy.ndarray`."""
         arr = np.asarray(arr)
-        rows, cols = arr.nonzero()
-        data = arr[rows, cols]
-        return cls(rows, cols, data, arr.shape, symmetry)
+        row_sizes, col_sizes = sizes
+        if arr.shape != (np.sum(row_sizes), np.sum(col_sizes)):
+            raise ValueError("Array shape does not match block sizes.")
+        row_offsets = np.cumsum(row_sizes) - row_sizes
+        col_offsets = np.cumsum(col_sizes) - col_sizes
+
+        rows = []
+        cols = []
+        data = []
+        for i, rr in enumerate(row_offsets):
+            for j, cc in enumerate(col_offsets):
+                b = arr[rr : rr + row_sizes[i], cc : cc + col_sizes[j]]
+                if np.all(b == 0):
+                    continue
+                rows.append(i)
+                cols.append(j)
+                data.append(b)
+
+        return cls(rows, cols, data, symmetry=symmetry)
 
     @classmethod
     def from_spmatrix(cls, mat: sp.spmatrix) -> "BCOO":
         """Creates a `BCOO` matrix from a `scipy.sparse.spmatrix`."""
-        mat = sp.coo_array(mat)
-        return cls(mat.row, mat.col, mat.data, mat.shape)
+        ...
