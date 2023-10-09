@@ -229,7 +229,6 @@ class COO(Sparse):
         value: "Number",
     ) -> None:
         """Sets a matrix element."""
-
         if not isinstance(key, tuple) or len(key) != 2:
             raise IndexError("Invalid index")
 
@@ -325,7 +324,7 @@ class COO(Sparse):
         if self.symmetry == "symmetric":
             return self
         if self.symmetry == "hermitian":
-            return self.conj()
+            return self.conjugate()
         transpose = COO(
             self.cols,
             self.rows,
@@ -342,23 +341,23 @@ class COO(Sparse):
         if self.symmetry == "hermitian":
             return self
         if self.symmetry == "symmetric":
-            return self.conj()
+            return self.conjugate()
         hermitian = COO(
             self.cols,
             self.rows,
-            np.conj(self.data),
+            self.data.conjugate(),
             (self.shape[1], self.shape[0]),
             self.dtype,
             self.symmetry,
         )
         return hermitian
 
-    def conj(self) -> "COO":
+    def conjugate(self) -> "COO":
         """The complex conjugate of the matrix."""
         conjugate = COO(
             self.rows,
             self.cols,
-            np.conj(self.data),
+            self.data.conjugate(),
             self.shape,
             self.dtype,
             self.symmetry,

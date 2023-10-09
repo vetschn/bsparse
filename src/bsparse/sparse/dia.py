@@ -277,7 +277,7 @@ class DIA(Sparse):
         if self.symmetry == "symmetric":
             return self
         if self.symmetry == "hermitian":
-            return self.conj()
+            return self.conjugate()
 
         offsets = -self.offsets
         rr = np.arange(len(offsets))[:, None]
@@ -303,11 +303,11 @@ class DIA(Sparse):
         if self.symmetry == "hermitian":
             return self
         if self.symmetry == "symmetric":
-            return self.conj()
+            return self.conjugate()
 
-        return self.conj().T
+        return self.conjugate().T
 
-    def conj(self) -> "DIA":
+    def conjugate(self) -> "DIA":
         """The complex conjugate of the matrix."""
         conjugate = DIA(
             self.offsets,

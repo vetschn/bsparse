@@ -343,7 +343,7 @@ class CSR(Sparse):
         if self.symmetry == "symmetric":
             return self
         if self.symmetry == "hermitian":
-            return self.conj()
+            return self.conjugate()
 
         from bsparse.sparse import COO
 
@@ -363,7 +363,7 @@ class CSR(Sparse):
         if self.symmetry == "hermitian":
             return self
         if self.symmetry == "symmetric":
-            return self.conj()
+            return self.conjugate()
 
         from bsparse.sparse import COO
 
@@ -377,7 +377,7 @@ class CSR(Sparse):
         )
         return hermitian.tocsr()
 
-    def conj(self) -> "CSR":
+    def conjugate(self) -> "CSR":
         """The complex conjugate of the matrix."""
         conjugate = CSR(
             self.rowptr,

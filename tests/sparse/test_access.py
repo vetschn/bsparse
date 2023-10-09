@@ -247,7 +247,7 @@ def test_conjugate(sparse_type: Sparse, shape: tuple[int, int], symmetry: str):
 
     mat = sparse_type.from_array(arr, symmetry=symmetry)
 
-    assert np.allclose(mat.conj().toarray(), arr.conj())
+    assert np.allclose(mat.conjugate().toarray(), arr.conj())
 
 
 @pytest.mark.parametrize(

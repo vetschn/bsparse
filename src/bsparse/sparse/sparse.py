@@ -127,8 +127,12 @@ class Sparse(ABC):
         """The transpose of the matrix."""
         ...
 
-    @abstractmethod
     def conj(self) -> "Sparse":
+        """The complex conjugate of the matrix."""
+        return self.conjugate()
+
+    @abstractmethod
+    def conjugate(self) -> "Sparse":
         """The complex conjugate of the matrix."""
         ...
 
