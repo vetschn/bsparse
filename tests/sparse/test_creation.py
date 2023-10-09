@@ -100,8 +100,6 @@ def test_from_spmatrix(sparse_type: Sparse, shape: tuple[int, int], symmetry: st
         mat = sparse_type.from_spmatrix(spmat, symmetry=symmetry)
         assert np.allclose(mat.toarray(), spmat.toarray())
 
-    assert np.allclose(spmat.toarray(), spmat.toarray())
-
 
 @pytest.mark.parametrize(
     "shape",

@@ -3,11 +3,8 @@ from numbers import Number
 import numpy as np
 import pytest
 
-# from bsparse import sparse
 from bsparse.sparse import COO, CSR, DIA
 from bsparse.sparse.sparse import Sparse
-
-# import scipy.sparse as sp
 
 
 @pytest.mark.parametrize(
@@ -159,7 +156,7 @@ def test_setitem(
 )
 def test_transpose(sparse_type: Sparse, shape: tuple[int, int], symmetry: str):
     """Tests the `.T` property."""
-    arr = np.random.random(shape)  # + 1j * np.random.random(shape)
+    arr = np.random.random(shape)
 
     if symmetry is not None and shape[0] != shape[1]:
         with pytest.raises(ValueError):
