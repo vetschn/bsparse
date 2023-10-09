@@ -1,7 +1,8 @@
-import numpy as np
-from pathlib import Path
 import random as rnd
-from numpy.typing import ArrayLike
+from pathlib import Path
+
+import numpy as np
+
 from bsparse import BCOO, BCSR, BDIA
 from bsparse.bsparse import BSparse
 
@@ -174,17 +175,17 @@ def random(
     cols = [ind % bshape[1] for ind in flat_ind]
 
     rng = np.random.default_rng()
-    data = rng.random(samples)
+    data = rng.random((samples, 1, 1))
 
     if dtype is None:
         dtype = data.dtype
 
     bsparse = BCOO(rows, cols, data, bshape, dtype)
-    if format == "coo":
+    if format == "bcoo":
         return bsparse
-    if format == "csr":
+    if format == "bcsr":
         return bsparse.tocsr()
-    if format == "dia":
+    if format == "bdia":
         return bsparse.todia()
     raise ValueError(f"Unknown format {format}")
 

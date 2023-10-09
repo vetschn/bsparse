@@ -1,11 +1,12 @@
+from numbers import Integral
 from warnings import warn
 
 import numpy as np
 import scipy.sparse as sp
 from numpy.typing import ArrayLike
 
-from bsparse.bsparse import BSparse
 from bsparse import sparse
+from bsparse.bsparse import BSparse
 
 
 class BCOO(BSparse):
@@ -64,8 +65,10 @@ class BCOO(BSparse):
         if len(self.data) != len(set(zip(self.rows, self.cols))):
             raise ValueError("Matrix has duplicate elements.")
 
-        if dtype is None:
+        if dtype is None and len(self.data) != 0:
             dtype = np.result_type(*[b.dtype for b in self.data])
+        if dtype is None:
+            dtype = np.dtype(float)
         self.data = [b.astype(dtype) for b in self.data]
         self._dtype = dtype
 
@@ -161,7 +164,7 @@ class BCOO(BSparse):
 
     def _getitem_symmetry(self, row: int | slice, col: int | slice):
         """Returns the element at the given coordinates."""
-        if isinstance(row, int) and isinstance(col, int):
+        if isinstance(row, Integral) and isinstance(col, Integral):
             row, col = self._unsign_index(row, col)
             if row <= col:
                 ind = np.nonzero((self.rows == row) & (self.cols == col))[0]
@@ -176,9 +179,9 @@ class BCOO(BSparse):
             if self.symmetry == "hermitian":
                 return self[col, row].conjugate()
 
-        if isinstance(row, int):
+        if isinstance(row, Integral):
             row = slice(row, row + 1)
-        if isinstance(col, int):
+        if isinstance(col, Integral):
             col = slice(col, col + 1)
 
         rows = np.arange(*row.indices(self.bshape[0]))
@@ -213,7 +216,7 @@ class BCOO(BSparse):
                 continue
             submatrix.rows = np.append(submatrix.rows, (rows[i] - rows[0]) // row_step)
             submatrix.cols = np.append(submatrix.cols, (cols[j] - cols[0]) // col_step)
-            submatrix.data = np.append(submatrix.data, value)
+            submatrix.data.append(value)
         return submatrix
 
     def _getslice(self, row: slice, col: slice):
@@ -240,20 +243,22 @@ class BCOO(BSparse):
         self, key: int | slice | list | tuple
     ) -> "np.ndarray | sparse.Sparse | BSparse":
         """Returns a matrix element or a submatrix."""
-        if isinstance(key, (int, slice)):
+        if isinstance(key, (Integral, slice)):
             key = (key, slice(None))
 
         if not isinstance(key, tuple) or len(key) != 2:
             raise IndexError("Invalid index")
 
         row, col = key
-        if not isinstance(row, (int, slice)) or not isinstance(col, (int, slice)):
+        if not isinstance(row, (Integral, slice)) or not isinstance(
+            col, (Integral, slice)
+        ):
             raise IndexError("Invalid index")
 
         if self.symmetry is not None:
             return self._getitem_symmetry(row, col)
 
-        if isinstance(row, int) and isinstance(col, int):
+        if isinstance(row, Integral) and isinstance(col, Integral):
             row, col = self._unsign_index(row, col)
             ind = np.nonzero((self.rows == row) & (self.cols == col))[0]
             if ind.size == 0:
@@ -262,9 +267,9 @@ class BCOO(BSparse):
                 )
             return self.data[ind[0]]
 
-        if isinstance(row, int):
+        if isinstance(row, Integral):
             row = slice(row, row + 1)
-        if isinstance(col, int):
+        if isinstance(col, Integral):
             col = slice(col, col + 1)
 
         return self._getslice(row, col)
@@ -470,15 +475,15 @@ class BCOO(BSparse):
         return conjugate
 
     def diagonal(self, offset: int = 0) -> np.ndarray:
-        """Returns the diagonal of the matrix."""
+        """Returns the block diagonal of the matrix."""
         if not -self.bshape[0] < offset < self.bshape[1]:
             raise ValueError("Offset out of bounds.")
 
         if offset < 0:
             if self.symmetry == "hermitian":
-                return np.conj(self.diagonal(-offset))
+                return np.conj(self.bdiagonal(-offset))
             if self.symmetry == "symmetric":
-                return self.diagonal(-offset)
+                return self.bdiagonal(-offset)
 
         start = (-offset) * self.bshape[1] if offset < 0 else offset
 
@@ -492,14 +497,15 @@ class BCOO(BSparse):
             rows.append(flat_ind // self.bshape[1])
             cols.append(flat_ind % self.bshape[1])
 
-        diag = np.zeros(len(rows), dtype=object, ndmin=3)
-        for i, (row, col) in enumerate(zip(rows, cols)):
+        diag = []
+        for row, col in zip(rows, cols):
             ind = np.nonzero((self.rows == row) & (self.cols == col))[0]
             if ind.size == 0:
-                return sparse.zeros(
-                    (self.row_sizes[row], self.col_sizes[col]), self.dtype
+                diag.append(
+                    sparse.zeros((self.row_sizes[row], self.col_sizes[col]), self.dtype)
                 )
-            return self.data[ind[0]]
+                continue
+            diag.append(self.data[ind[0]])
         return diag
 
     def copy(self) -> "BCOO":
@@ -540,9 +546,13 @@ class BCOO(BSparse):
             )
 
         if self.symmetry == "symmetric":
-            arr += arr.T
+            temp = arr.T.copy()
+            temp[np.nonzero(arr)] = 0
+            arr += temp
         if self.symmetry == "hermitian":
-            arr += arr.conj().T
+            temp = arr.conj().T.copy()
+            temp[np.nonzero(arr)] = 0
+            arr += temp
 
         return arr
 
@@ -625,9 +635,35 @@ class BCOO(BSparse):
                 cols.append(j)
                 data.append(b)
 
-        return cls(rows, cols, data, symmetry=symmetry)
+        bshape = (len(row_sizes), len(col_sizes))
+
+        return cls(rows, cols, data, bshape, symmetry=symmetry)
 
     @classmethod
-    def from_spmatrix(cls, mat: sp.spmatrix) -> "BCOO":
+    def from_spmatrix(
+        cls,
+        mat: sp.spmatrix,
+        sizes: tuple[ArrayLike, ArrayLike],
+        symmetry: str | None = None,
+    ) -> "BCOO":
         """Creates a `BCOO` matrix from a `scipy.sparse.spmatrix`."""
-        ...
+        mat = sp.lil_array(mat)
+        row_sizes, col_sizes = sizes
+        if mat.shape != (np.sum(row_sizes), np.sum(col_sizes)):
+            raise ValueError("Matrix shape does not match block sizes.")
+        row_offsets = np.cumsum(row_sizes) - row_sizes
+        col_offsets = np.cumsum(col_sizes) - col_sizes
+
+        rows = []
+        cols = []
+        data = []
+        for i, rr in enumerate(row_offsets):
+            for j, cc in enumerate(col_offsets):
+                b = mat[rr : rr + row_sizes[i], cc : cc + col_sizes[j]]
+                if b.nnz == 0:
+                    continue
+                rows.append(i)
+                cols.append(j)
+                data.append(b)
+
+        return cls(rows, cols, data, symmetry=symmetry)
