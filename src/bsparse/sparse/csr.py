@@ -13,17 +13,17 @@ class CSR(Sparse):
 
     The ``CSR`` class represents a sparse matrix using three arrays:
 
-    * ``indptr``: contains the index of the first element of each row.
-    * ``indices``: contains the column indices of each non-zero element.
+    * ``rowptr``: contains the index of the first element of each row.
+    * ``cols``: contains the column indices of each non-zero element.
     * ``data``: contains the values of each non-zero element.
 
     Parameters
     ----------
-    indptr : array_like, optional
+    rowptr : array_like
         The index of the first element of each row.
-    indices : array_like, optional
+    cols : array_like
         The column indices of each non-zero element.
-    data : array_like, optional
+    data : array_like
         The values of each non-zero element.
     shape : tuple, optional
         The shape of the matrix. If not given, it is inferred from the
@@ -42,9 +42,9 @@ class CSR(Sparse):
 
     def __init__(
         self,
-        rowptr: ArrayLike = None,
-        cols: ArrayLike = None,
-        data: ArrayLike = None,
+        rowptr: ArrayLike,
+        cols: ArrayLike,
+        data: ArrayLike,
         shape: tuple[int, int] = None,
         dtype: np.dtype = None,
         symmetry: str | None = None,
@@ -114,9 +114,12 @@ class CSR(Sparse):
 
     def _expand_rows(self) -> np.ndarray:
         """Expands the row indices."""
-        return np.repeat(
-            np.arange(self.shape[0]), np.diff(self.rowptr) if self.nnz else 0
-        )
+        rows = np.zeros(self.nnz, dtype=int)
+        if self.nnz == 0:
+            return rows
+        for i in range(self.shape[0]):
+            rows[self.rowptr[i] : self.rowptr[i + 1]] = i
+        return rows
 
     def _get_cols(self, row: int) -> np.ndarray:
         """Returns the column indices for the given row."""

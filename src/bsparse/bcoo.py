@@ -85,8 +85,6 @@ class BCOO(BSparse):
         for b in data:
             if b.ndim != 2:
                 raise ValueError("Matrix blocks must be two dimensional.")
-            if not hasattr(b, "size"):
-                raise ValueError("Matrix blocks must have a `size` attribute.")
             if not hasattr(b, "shape"):
                 raise ValueError("Matrix blocks must have a `shape` attribute.")
             if not hasattr(b, "dtype"):
@@ -141,10 +139,10 @@ class BCOO(BSparse):
                 "Symmetric matrix is not upper triangular. "
                 "Lower triangular part is discarded."
             )
-            ind = self.rows <= self.cols
-            self.rows = self.rows[ind]
-            self.cols = self.cols[ind]
-            self.data = [b for b, i in zip(self.data, ind) if i]
+            mask = self.rows <= self.cols
+            self.rows = self.rows[mask]
+            self.cols = self.cols[mask]
+            self.data = [b for b, m in zip(self.data, mask) if m]
 
     def _sort_indices(self) -> None:
         """Sorts the matrix by rows and columns."""
@@ -240,7 +238,7 @@ class BCOO(BSparse):
         return submatrix
 
     def __getitem__(
-        self, key: int | slice | list | tuple
+        self, key: int | slice | tuple
     ) -> "np.ndarray | sparse.Sparse | BSparse":
         """Returns a matrix element or a submatrix."""
         if isinstance(key, (Integral, slice)):
@@ -293,7 +291,6 @@ class BCOO(BSparse):
             raise IndexError("Invalid index")
 
         row, col = self._unsign_index(row, col)
-
         if self.symmetry is not None and row > col:
             if self.symmetry == "symmetric":
                 self[col, row] = value
@@ -421,7 +418,7 @@ class BCOO(BSparse):
     @property
     def nnz(self) -> int:
         """The number of non-zero elements in the matrix."""
-        return sum([b.size if hasattr(b, "size") else b.nnz for b in self.data])
+        return sum(b.size if hasattr(b, "size") else b.nnz for b in self.data)
 
     @property
     def symmetry(self) -> str | None:
@@ -455,7 +452,7 @@ class BCOO(BSparse):
         hermitian = BCOO(
             self.cols,
             self.rows,
-            [b.conj() for b in self.data],
+            [b.conjugate() for b in self.data],
             (self.bshape[1], self.bshape[0]),
             self.dtype,
             self.symmetry,
@@ -481,9 +478,9 @@ class BCOO(BSparse):
 
         if offset < 0:
             if self.symmetry == "hermitian":
-                return np.conj(self.bdiagonal(-offset))
+                return [b.conjugate().T for b in self.diagonal(-offset)]
             if self.symmetry == "symmetric":
-                return self.bdiagonal(-offset)
+                return [b.T for b in self.diagonal(-offset)]
 
         start = (-offset) * self.bshape[1] if offset < 0 else offset
 
@@ -582,17 +579,25 @@ class BCOO(BSparse):
 
     def todia(self) -> "BSparse":
         """Converts the matrix to `BDIA` format."""
+        offsets = []
+        data = []
+        start = -self.bshape[0] + 1 if self.symmetry is None else 0
+        for offset in range(start, self.bshape[1]):
+            bdiag = self.diagonal(offset)
+            if all(
+                [
+                    np.all(b == 0) if isinstance(b, np.ndarray) else b.nnz == 0
+                    for b in bdiag
+                ]
+            ):
+                continue
+            offsets.append(offset)
+            data.append(bdiag)
+
         from bsparse.bdia import BDIA
 
-        offsets, offset_indices = np.unique(self.cols - self.rows, return_inverse=True)
-
-        if len(self.data) == 0:
-            data = np.zeros((0, 0), dtype=object)
-            return BDIA(offsets, data, self.bshape, self.dtype, self.symmetry)
-
-        data = np.zeros((len(offsets), self.cols.max() + 1), dtype=object)
-        data[offset_indices, self.cols] = self.data
-
+        if len(offsets) == 0:
+            return BDIA([], [[]], self.bshape, self.dtype, self.symmetry)
         return BDIA(offsets, data, self.bshape, self.dtype, self.symmetry)
 
     def save_npz(self, filename: str) -> None:
@@ -635,9 +640,9 @@ class BCOO(BSparse):
                 cols.append(j)
                 data.append(b)
 
-        bshape = (len(row_sizes), len(col_sizes))
-
-        return cls(rows, cols, data, bshape, symmetry=symmetry)
+        return cls(
+            rows, cols, data, (len(row_sizes), len(col_sizes)), symmetry=symmetry
+        )
 
     @classmethod
     def from_spmatrix(
@@ -666,4 +671,6 @@ class BCOO(BSparse):
                 cols.append(j)
                 data.append(b)
 
-        return cls(rows, cols, data, symmetry=symmetry)
+        return cls(
+            rows, cols, data, (len(row_sizes), len(col_sizes)), symmetry=symmetry
+        )

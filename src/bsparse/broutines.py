@@ -38,7 +38,7 @@ def zeros(
     if format == "bcsr":
         return BCSR([], [], [], bshape, dtype, symmetry)
     if format == "bdia":
-        return BDIA([], [], bshape, dtype, symmetry)
+        return BDIA([], [[]], bshape, dtype, symmetry)
     raise ValueError(f"Unknown bsparse format {format}")
 
 
