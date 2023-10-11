@@ -133,10 +133,16 @@ def test_setitem(
     zero_mat[key] = value
 
     if np.all(value == 0):
-        assert full_mat[key].toarray() == value
-        assert zero_mat[key].toarray() == value
-        assert isinstance(full_mat[key], Sparse)
-        assert isinstance(zero_mat[key], Sparse)
+        if isinstance(full_mat, BDIA):
+            assert full_mat[key] == value
+            assert zero_mat[key].toarray() == value
+            assert isinstance(full_mat[key], np.ndarray)
+            assert isinstance(zero_mat[key], Sparse)
+        else:
+            assert full_mat[key].toarray() == value
+            assert zero_mat[key].toarray() == value
+            assert isinstance(full_mat[key], Sparse)
+            assert isinstance(zero_mat[key], Sparse)
     else:
         assert full_mat[key] == value
         assert zero_mat[key] == value
