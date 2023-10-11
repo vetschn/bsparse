@@ -261,7 +261,9 @@ class BDIA(BSparse):
         offset = col - row
         if offset in self.offsets:
             ind = np.nonzero(self.offsets == offset)[0][0]
-            self.data[int(ind)][min(row, col)] = value
+            data = self.data.copy()
+            data[int(ind)][min(row, col)] = value
+            self.data = self._validate_data(data)
             return
 
         all_zero = (
@@ -282,7 +284,7 @@ class BDIA(BSparse):
         if len(self.data[0]) == 0:
             self.data = [bdiag]
             return
-        self.data.append(bdiag)
+        self.data = self._validate_data(self.data + [bdiag])
         self._sort_diagonals()
 
     def __add__(self, other: "np.number | BSparse") -> "BDIA":
