@@ -331,6 +331,8 @@ class BCSR(BSparse):
                 self.rowptr[row + 1 :] -= 1
                 self.cols = self.cols[mask]
                 self.data = [b for b, m in zip(self.data, mask) if m]
+                self._row_sizes[row] = value.shape[0]
+                self._col_sizes[col] = value.shape[1]
                 return
             ind = np.nonzero(mask)[0][0]
             self.data[ind] = value
@@ -462,8 +464,8 @@ class BCSR(BSparse):
         transpose = BCOO(
             self.cols,
             self._expand_rows(),
-            self.data,
-            (self.shape[1], self.shape[0]),
+            [b.T for b in self.data],
+            (self.bshape[1], self.bshape[0]),
             self.dtype,
             self.symmetry,
         )
@@ -482,8 +484,8 @@ class BCSR(BSparse):
         hermitian = BCOO(
             self.cols,
             self._expand_rows(),
-            [b.conjugate() for b in self.data],
-            (self.shape[1], self.shape[0]),
+            [b.conjugate().T for b in self.data],
+            (self.bshape[1], self.bshape[0]),
             self.dtype,
             self.symmetry,
         )

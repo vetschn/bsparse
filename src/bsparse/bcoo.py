@@ -313,8 +313,8 @@ class BCOO(BSparse):
                 self.rows = self.rows[mask]
                 self.cols = self.cols[mask]
                 self.data = [b for b, m in zip(self.data, mask) if m]
-                self._row_sizes[row] = 1
-                self._col_sizes[col] = 1
+                self._row_sizes[row] = value.shape[0]
+                self._col_sizes[col] = value.shape[1]
                 return
             ind = np.nonzero(mask)[0][0]
             self.data[ind] = value
@@ -435,7 +435,7 @@ class BCOO(BSparse):
         transpose = BCOO(
             self.cols,
             self.rows,
-            self.data,
+            [b.T for b in self.data],
             (self.bshape[1], self.bshape[0]),
             self.dtype,
             self.symmetry,
@@ -452,7 +452,7 @@ class BCOO(BSparse):
         hermitian = BCOO(
             self.cols,
             self.rows,
-            [b.conjugate() for b in self.data],
+            [b.conjugate().T for b in self.data],
             (self.bshape[1], self.bshape[0]),
             self.dtype,
             self.symmetry,
