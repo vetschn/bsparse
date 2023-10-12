@@ -69,7 +69,9 @@ instance/
 .scrapy
 
 # Sphinx documentation
-docs/_build/
+doc/build/
+doc/source/api/generated
+
 
 # PyBuilder
 .pybuilder/
@@ -159,5 +161,9 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
-
+# Development
 .vscode
+dev/
+
+# System files
+gmon.out
