@@ -43,9 +43,10 @@ class Sparse(ABC):
         """Adds another matrix or a scalar to this matrix."""
         ...
 
+    @abstractmethod
     def __radd__(self, other: "Number | Sparse") -> "Sparse":
         """Adds this matrix to another matrix or a scalar."""
-        return self.__add__(other)
+        ...
 
     @abstractmethod
     def __sub__(self, other: "Number | Sparse") -> "Sparse":
@@ -62,9 +63,10 @@ class Sparse(ABC):
         """Multiplies another matrix or a scalar by this matrix."""
         ...
 
+    @abstractmethod
     def __rmul__(self, other: "Number | Sparse") -> "Sparse":
         """Multiplies this matrix by another matrix or a scalar."""
-        return self.__mul__(other)
+        ...
 
     @abstractmethod
     def __truediv__(self, other: "Number | Sparse") -> "Sparse":

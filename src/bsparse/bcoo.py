@@ -336,6 +336,10 @@ class BCOO(BSparse):
         """Adds another matrix or a scalar to this matrix."""
         ...
 
+    def __radd__(self, other: "np.number | BSparse") -> "BCOO":
+        """Adds this matrix to another matrix or a scalar."""
+        ...
+
     def __sub__(self, other: "np.number | BSparse") -> "BCOO":
         """Subtracts another matrix or a scalar from this matrix."""
         ...
@@ -346,6 +350,10 @@ class BCOO(BSparse):
 
     def __mul__(self, other: "np.number | BSparse") -> "BCOO":
         """Multiplies another matrix or a scalar by this matrix."""
+        ...
+
+    def __rmul__(self, other: "np.number | BSparse") -> "BCOO":
+        """Multiplies this matrix by another matrix or a scalar."""
         ...
 
     def __truediv__(self, other: "np.number | BSparse") -> "BCOO":

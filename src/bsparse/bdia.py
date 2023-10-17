@@ -291,6 +291,10 @@ class BDIA(BSparse):
         """Adds another matrix or a scalar to this matrix."""
         ...
 
+    def __radd__(self, other: "np.number | BSparse") -> "BDIA":
+        """Adds this matrix to another matrix or a scalar."""
+        ...
+
     def __sub__(self, other: "np.number | BSparse") -> "BDIA":
         """Subtracts another matrix or a scalar from this matrix."""
         ...
@@ -301,6 +305,10 @@ class BDIA(BSparse):
 
     def __mul__(self, other: "np.number | BSparse") -> "BDIA":
         """Multiplies another matrix or a scalar by this matrix."""
+        ...
+
+    def __rmul__(self, other: "np.number | BSparse") -> "BDIA":
+        """Multiplies this matrix by another matrix or a scalar."""
         ...
 
     def __truediv__(self, other: "np.number | BSparse") -> "BDIA":

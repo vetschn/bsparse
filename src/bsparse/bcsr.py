@@ -361,6 +361,10 @@ class BCSR(BSparse):
         """Adds another matrix or a scalar to this matrix."""
         ...
 
+    def __radd__(self, other: "np.number | BSparse") -> "BCSR":
+        """Adds this matrix to another matrix or a scalar."""
+        ...
+
     def __sub__(self, other: "np.number | BSparse") -> "BCSR":
         """Subtracts another matrix or a scalar from this matrix."""
         ...
@@ -371,6 +375,10 @@ class BCSR(BSparse):
 
     def __mul__(self, other: "np.number | BSparse") -> "BCSR":
         """Multiplies another matrix or a scalar by this matrix."""
+        ...
+
+    def __rmul__(self, other: "np.number | BSparse") -> "BCSR":
+        """Multiplies this matrix by another matrix or a scalar."""
         ...
 
     def __truediv__(self, other: "np.number | BSparse") -> "BCSR":

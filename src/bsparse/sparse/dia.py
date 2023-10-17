@@ -218,6 +218,10 @@ class DIA(Sparse):
         """Adds another matrix or a scalar to this matrix."""
         ...
 
+    def __radd__(self, other: "Number | DIA") -> "DIA":
+        """Adds this matrix to another matrix or a scalar."""
+        ...
+
     def __sub__(self, other: "Number | DIA") -> "DIA":
         """Subtracts another matrix or a scalar from this matrix."""
         ...
@@ -228,6 +232,10 @@ class DIA(Sparse):
 
     def __mul__(self, other: "Number | DIA") -> "DIA":
         """Multiplies another matrix or a scalar by this matrix."""
+        ...
+
+    def __rmul__(self, other: "Number | DIA") -> "DIA":
+        """Multiplies this matrix by another matrix or a scalar."""
         ...
 
     def __truediv__(self, other: "Number | DIA") -> "DIA":
