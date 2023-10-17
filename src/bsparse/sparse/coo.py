@@ -336,47 +336,13 @@ class COO(Sparse):
         self, other: Number | Sparse | np.ndarray | sp.spmatrix
     ) -> "COO | np.ndarray":
         """Subtracts another matrix or a scalar from this matrix."""
-        if isinstance(other, Number):
-            raise NotImplementedError
-        if isinstance(other, np.ndarray):
-            return self.toarray() - other
-        if isinstance(other, Sparse):
-            other = other.tocoo()
-        if isinstance(other, sp.spmatrix):
-            other = COO.from_spmatrix(other)
-
-        if not isinstance(other, COO):
-            raise TypeError("Invalid type.")
-
-        if self.shape != other.shape:
-            raise ValueError("Incompatible matrix shapes.")
-
-        if self.symmetry == other.symmetry:
-            rows = np.concatenate((self.rows, other.rows))
-            cols = np.concatenate((self.cols, other.cols))
-            data = np.concatenate((self.data, -other.data))
-            coords, inverse = np.unique(
-                list(zip(rows, cols)), axis=0, return_inverse=True
-            )
-            data = np.bincount(inverse, weights=data)
-            ind = np.nonzero(data)
-            result = COO(
-                coords[:, 0][ind],
-                coords[:, 1][ind],
-                data[ind],
-                self.shape,
-                np.result_type(self.dtype, other.dtype),
-                self.symmetry,
-            )
-            return result
-
-        return self._desymmetrize() - other._desymmetrize()
+        return self + (-other)
 
     def __rsub__(
         self, other: Number | Sparse | np.ndarray | sp.spmatrix
     ) -> "COO | np.ndarray":
         """Subtracts this matrix from another matrix or a scalar."""
-        return -self + other
+        return other + (-self)
 
     def __mul__(
         self, other: Number | Sparse | np.ndarray | sp.spmatrix
