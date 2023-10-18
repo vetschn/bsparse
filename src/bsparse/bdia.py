@@ -32,6 +32,9 @@ class BDIA(BSparse):
     dtype : dtype, optional
         The data type of the matrix. If not given, it is inferred from
         the data.
+    sizes : tuple[array_like, array_like], optional
+        The sizes of the row and column elements. If not given, they
+        are inferred from the data.
     symmetry : str, optional
         The symmetry of the matrix. If not given, no symmetry is
         assumed. This is only applicable for square matrices, where
@@ -47,6 +50,7 @@ class BDIA(BSparse):
         data: ArrayLike,
         bshape: tuple[int, int] | None = None,
         dtype: np.dtype | None = None,
+        sizes: tuple[ArrayLike, ArrayLike] | None = None,
         symmetry: str | None = None,
     ) -> None:
         """Initializes a ``BDIA`` matrix."""
@@ -66,8 +70,12 @@ class BDIA(BSparse):
         self._symmetry = self._validate_symmetry(symmetry)
         self._sort_diagonals()
 
-        self._row_sizes = self.row_sizes
-        self._col_sizes = self.col_sizes
+        if sizes is not None:
+            self._row_sizes = np.asarray(sizes[0], dtype=int)
+            self._col_sizes = np.asarray(sizes[1], dtype=int)
+        else:
+            self._row_sizes = self.row_sizes
+            self._col_sizes = self.col_sizes
 
     def _validate_data(self, data: ArrayLike) -> list:
         """Validates the data blocks of the matrix."""
@@ -416,6 +424,7 @@ class BDIA(BSparse):
             data,
             (self.bshape[1], self.bshape[0]),
             self.dtype,
+            (self.col_sizes, self.row_sizes),
             self.symmetry,
         )
         return transpose
@@ -437,6 +446,7 @@ class BDIA(BSparse):
             [[b.conjugate() for b in bdiag] for bdiag in self.data],
             self.bshape,
             self.dtype,
+            (self.row_sizes, self.col_sizes),
             self.symmetry,
         )
         return conjugate
@@ -471,6 +481,7 @@ class BDIA(BSparse):
             self.data.copy(),
             self.bshape,
             self.dtype,
+            (self.row_sizes, self.col_sizes),
             self.symmetry,
         )
         return new
@@ -482,6 +493,7 @@ class BDIA(BSparse):
             self.data.copy(),
             self.bshape,
             dtype,
+            (self.row_sizes, self.col_sizes),
             self.symmetry,
         )
         return new
@@ -551,7 +563,15 @@ class BDIA(BSparse):
         cols = np.concatenate(cols)
         data = [b for bdiag in data for b in bdiag]
 
-        return BCOO(rows, cols, data, self.bshape, self.dtype, self.symmetry)
+        return BCOO(
+            rows,
+            cols,
+            data,
+            self.bshape,
+            self.dtype,
+            (self.row_sizes, self.col_sizes),
+            self.symmetry,
+        )
 
     def tocsr(self) -> "BSparse":
         """Returns a Compressed Sparse Row representation of the matrix."""
@@ -570,6 +590,8 @@ class BDIA(BSparse):
             data=self.data,
             bshape=self.bshape,
             dtype=self.dtype,
+            row_sizes=self.row_sizes,
+            col_sizes=self.col_sizes,
             symmetry=self.symmetry,
         )
 

@@ -32,6 +32,9 @@ class BCSR(BSparse):
     dtype : numpy.dtype, optional
         The data type of the matrix elements. If not given, it is
         inferred from the data array.
+    sizes : tuple[np.ndarray, np.ndarray], optional
+        The sizes of the blocks. If not given, they are inferred from
+        ``data``.
     symmetry : str, optional
         The symmetry of the matrix. If not given, no symmetry is
         assumed. This is only applicable for square matrices, where
@@ -48,6 +51,7 @@ class BCSR(BSparse):
         data: ArrayLike,
         bshape: tuple | None = None,
         dtype: np.dtype | None = None,
+        sizes: tuple[np.ndarray, np.ndarray] | None = None,
         symmetry: str | None = None,
     ) -> None:
         """Initializes a ``BCSR`` matrix."""
@@ -69,8 +73,12 @@ class BCSR(BSparse):
 
         self._check_alignment()
 
-        self._row_sizes = self.row_sizes
-        self._col_sizes = self.col_sizes
+        if sizes is not None:
+            self._row_sizes = np.asarray(sizes[0], dtype=int)
+            self._col_sizes = np.asarray(sizes[1], dtype=int)
+        else:
+            self._row_sizes = self.row_sizes
+            self._col_sizes = self.col_sizes
 
     def _validate_data(self, data: ArrayLike) -> list:
         """Validates the data blocks of the matrix."""
@@ -507,6 +515,7 @@ class BCSR(BSparse):
             [b.conjugate() for b in self.data],
             self.bshape,
             self.dtype,
+            (self.row_sizes, self.col_sizes),
             self.symmetry,
         )
         return conjugate
@@ -553,6 +562,7 @@ class BCSR(BSparse):
             self.data.copy(),
             self.bshape,
             self.dtype,
+            (self.row_sizes, self.col_sizes),
             self.symmetry,
         )
 
@@ -564,6 +574,7 @@ class BCSR(BSparse):
             self.data.copy(),
             self.bshape,
             dtype,
+            (self.row_sizes, self.col_sizes),
             self.symmetry,
         )
         return new
@@ -604,6 +615,7 @@ class BCSR(BSparse):
             self.data,
             self.bshape,
             self.dtype,
+            (self.row_sizes, self.col_sizes),
             self.symmetry,
         )
         return bcoo
@@ -626,6 +638,8 @@ class BCSR(BSparse):
             data=self.data,
             bshape=self.bshape,
             dtype=self.dtype,
+            row_sizes=self.row_sizes,
+            col_sizes=self.col_sizes,
             symmetry=self.symmetry,
         )
 

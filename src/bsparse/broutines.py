@@ -10,6 +10,7 @@ from bsparse.bsparse import BSparse
 def zeros(
     bshape: tuple[int, int],
     dtype: np.dtype = float,
+    sizes: tuple[np.ndarray, np.ndarray] | None = None,
     symmetry: str | None = None,
     format: str = "bcoo",
 ) -> BSparse:
@@ -34,11 +35,11 @@ def zeros(
     """
     format = format.lower()
     if format == "bcoo":
-        return BCOO([], [], [], bshape, dtype, symmetry)
+        return BCOO([], [], [], bshape, dtype, sizes, symmetry)
     if format == "bcsr":
-        return BCSR([], [], [], bshape, dtype, symmetry)
+        return BCSR([], [], [], bshape, dtype, sizes, symmetry)
     if format == "bdia":
-        return BDIA([], [[]], bshape, dtype, symmetry)
+        return BDIA([], [[]], bshape, dtype, sizes, symmetry)
     raise ValueError(f"Unknown bsparse format {format}")
 
 
@@ -209,15 +210,35 @@ def load_npz(file: Path) -> BSparse:
         raise ValueError("No format specified.")
 
     bshape, dtype, symmetry = npz["bshape"], npz["dtype"].item(), npz["symmetry"].item()
+    sizes = npz["row_sizes"], npz["col_sizes"]
 
     if npz["format"] == "bcoo":
         return BCOO(
-            npz["rows"], npz["cols"], npz["data"].tolist(), bshape, dtype, symmetry
+            npz["rows"],
+            npz["cols"],
+            npz["data"].tolist(),
+            bshape,
+            dtype,
+            sizes,
+            symmetry,
         )
     if npz["format"] == "bcsr":
         return BCSR(
-            npz["rowptr"], npz["cols"], npz["data"].tolist(), bshape, dtype, symmetry
+            npz["rowptr"],
+            npz["cols"],
+            npz["data"].tolist(),
+            bshape,
+            dtype,
+            sizes,
+            symmetry,
         )
     if npz["format"] == "bdia":
-        return BDIA(npz["offsets"], npz["data"].tolist(), bshape, dtype, symmetry)
+        return BDIA(
+            npz["offsets"],
+            npz["data"].tolist(),
+            bshape,
+            dtype,
+            sizes,
+            symmetry,
+        )
     raise ValueError(f"Unknown bsparse format {npz['format']}")
