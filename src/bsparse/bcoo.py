@@ -1,4 +1,4 @@
-from numbers import Integral
+from numbers import Integral, Number
 from warnings import warn
 
 import numpy as np
@@ -37,6 +37,9 @@ class BCOO(BSparse):
     dtype : dtype, optional
         The data type of the matrix elements. If not given, it is
         inferred from ``data``.
+    sizes : tuple[np.ndarray, np.ndarray], optional
+        The sizes of the blocks. If not given, they are inferred from
+        ``data``.
     symmetry : str, optional
         The symmetry of the matrix. If not given, no symmetry is
         assumed. This is only applicable for square matrices, where
@@ -53,6 +56,7 @@ class BCOO(BSparse):
         data: ArrayLike,
         bshape: tuple[int, int] | None = None,
         dtype: np.dtype | None = None,
+        sizes: tuple[np.ndarray, np.ndarray] | None = None,
         symmetry: str | None = None,
     ) -> None:
         """Initializes a ``BCOO`` matrix."""
@@ -76,8 +80,12 @@ class BCOO(BSparse):
         self._symmetry = self._validate_symmetry(symmetry)
         self._sort_indices()
 
-        self._row_sizes = self.row_sizes
-        self._col_sizes = self.col_sizes
+        if sizes is not None:
+            self._row_sizes = np.asarray(sizes[0], dtype=int)
+            self._col_sizes = np.asarray(sizes[1], dtype=int)
+        else:
+            self._row_sizes = self.row_sizes
+            self._col_sizes = self.col_sizes
 
     def _validate_data(self, data: ArrayLike) -> list:
         """Validates the data blocks of the matrix."""
@@ -144,6 +152,22 @@ class BCOO(BSparse):
             self.cols = self.cols[mask]
             self.data = [b for b, m in zip(self.data, mask) if m]
 
+    def _desymmetrize(self) -> "BCOO":
+        """Removes symmetry from the matrix."""
+        if self.symmetry is None:
+            return self.copy()
+
+        mask = self.rows != self.cols
+        rows = np.concatenate((self.rows, self.cols[mask]))
+        cols = np.concatenate((self.cols, self.rows[mask]))
+        lower_data = [b.T for b, m in zip(self.data, mask) if m]
+        if self.symmetry == "hermitian":
+            lower_data = [b.conjugate() for b in lower_data]
+        data = self.data + lower_data
+        return BCOO(
+            rows, cols, data, self.bshape, self.dtype, (self.row_sizes, self.col_sizes)
+        )
+
     def _sort_indices(self) -> None:
         """Sorts the matrix by rows and columns."""
         order = np.lexsort((self.cols, self.rows))
@@ -201,11 +225,19 @@ class BCOO(BSparse):
                 [b for b, m in zip(self.data, mask) if m],
                 bshape=(len(rows), len(cols)),
                 dtype=self.dtype,
+                sizes=(self.row_sizes[rows], self.col_sizes[cols]),
                 symmetry=self.symmetry,
             )
             return submatrix
 
-        submatrix = BCOO([], [], [], bshape=(len(rows), len(cols)), dtype=self.dtype)
+        submatrix = BCOO(
+            [],
+            [],
+            [],
+            bshape=(len(rows), len(cols)),
+            dtype=self.dtype,
+            sizes=(self.row_sizes[rows], self.col_sizes[cols]),
+        )
         for i, j in np.ndindex(submatrix.bshape):
             value = self[int(rows[i]), int(cols[j])]
             if isinstance(value, (sparse.Sparse, sp.spmatrix)) and value.nnz == 0:
@@ -234,6 +266,7 @@ class BCOO(BSparse):
             [b for b, m in zip(self.data, mask) if m],
             bshape=(len(rows), len(cols)),
             dtype=self.dtype,
+            sizes=(self.row_sizes[rows], self.col_sizes[cols]),
         )
         return submatrix
 
@@ -332,49 +365,274 @@ class BCOO(BSparse):
         self._row_sizes[row] = value.shape[0]
         self._col_sizes[col] = value.shape[1]
 
-    def __add__(self, other: "np.number | BSparse") -> "BCOO":
+    def __add__(
+        self, other: Number | BSparse | np.ndarray | sp.spmatrix
+    ) -> "BCOO | np.ndarray":
         """Adds another matrix or a scalar to this matrix."""
-        ...
+        if isinstance(other, Number):
+            if other == 0:
+                return self.copy()
+            raise NotImplementedError
+        if isinstance(other, np.ndarray):
+            return self.toarray() + other
+        if isinstance(other, BSparse):
+            other = other.tocoo()
+        if isinstance(other, sp.spmatrix):
+            other = BCOO.from_spmatrix(other, (self.row_sizes, self.col_sizes))
 
-    def __radd__(self, other: "np.number | BSparse") -> "BCOO":
+        if not isinstance(other, BCOO):
+            raise TypeError("Invalid type.")
+
+        if self.bshape != other.bshape:
+            raise ValueError("Incompatible matrix shapes.")
+        if np.any(self.row_sizes != other.row_sizes) or np.any(
+            self.col_sizes != other.col_sizes
+        ):
+            raise ValueError("Incompatible block sizes.")
+
+        if self.symmetry != other.symmetry:
+            return self._desymmetrize() + other._desymmetrize()
+
+        rows = np.concatenate((self.rows, other.rows))
+        cols = np.concatenate((self.cols, other.cols))
+        data = self.data + other.data
+        coords, inverse = np.unique(list(zip(rows, cols)), axis=0, return_inverse=True)
+
+        # This is just a weighted bincount.
+        new_data = [None] * (inverse.max() + 1)
+        for i, inv in enumerate(inverse):
+            if new_data[inv] is None:
+                new_data[inv] = data[i].copy()
+                continue
+            new_data[inv] += data[i].copy()
+
+        mask = [
+            np.any(b != 0) if isinstance(b, np.ndarray) else b.nnz != 0
+            for b in new_data
+        ]
+
+        return BCOO(
+            coords[:, 0][mask],
+            coords[:, 1][mask],
+            [b for b, i in zip(new_data, mask) if i],
+            self.bshape,
+            self.dtype,
+            (self.row_sizes, self.col_sizes),
+            self.symmetry,
+        )
+
+    def __radd__(
+        self, other: Number | BSparse | np.ndarray | sp.spmatrix
+    ) -> "BCOO | np.ndarray":
         """Adds this matrix to another matrix or a scalar."""
-        ...
+        return self + other
 
-    def __sub__(self, other: "np.number | BSparse") -> "BCOO":
+    def __sub__(
+        self, other: Number | BSparse | np.ndarray | sp.spmatrix
+    ) -> "BCOO | np.ndarray":
         """Subtracts another matrix or a scalar from this matrix."""
-        ...
+        return self + (-other)
 
-    def __rsub__(self, other: "np.number | BSparse") -> "BCOO":
+    def __rsub__(
+        self, other: Number | BSparse | np.ndarray | sp.spmatrix
+    ) -> "BCOO | np.ndarray":
         """Subtracts this matrix from another matrix or a scalar."""
-        ...
+        return other + (-self)
 
-    def __mul__(self, other: "np.number | BSparse") -> "BCOO":
+    def __mul__(
+        self, other: Number | BSparse | np.ndarray | sp.spmatrix
+    ) -> "BCOO | np.ndarray":
         """Multiplies another matrix or a scalar by this matrix."""
-        ...
+        if isinstance(other, Number):
+            if self.symmetry == "hermitian" and np.iscomplexobj(other):
+                self = self._desymmetrize()
+            result = BCOO(
+                self.rows.copy(),
+                self.cols.copy(),
+                [other * b for b in self.data],
+                self.bshape,
+                np.result_type(self, other),
+                (self.row_sizes, self.col_sizes),
+                self.symmetry,
+            )
+            return result
+        if isinstance(other, np.ndarray):
+            return self.toarray() * other
+        if isinstance(other, BSparse):
+            other = other.tocoo()
+        if isinstance(other, sp.spmatrix):
+            other = BCOO.from_spmatrix(other, (self.row_sizes, self.col_sizes))
 
-    def __rmul__(self, other: "np.number | BSparse") -> "BCOO":
+        if not isinstance(other, BCOO):
+            raise TypeError("Invalid type.")
+
+        if self.bshape != other.bshape:
+            raise ValueError("Incompatible matrix shapes.")
+        if np.any(self.row_sizes != other.row_sizes) or np.any(
+            self.col_sizes != other.col_sizes
+        ):
+            raise ValueError("Incompatible block sizes.")
+
+        if self.symmetry != other.symmetry:
+            return self._desymmetrize() * other._desymmetrize()
+
+        common = set(zip(self.rows, self.cols)) & set(zip(other.rows, other.cols))
+        rows, cols = zip(*common)
+        inds = np.lexsort((cols, rows))
+        rows = np.array(rows)[inds]
+        cols = np.array(cols)[inds]
+
+        self_mask = [coord in common for coord in zip(self.rows, self.cols)]
+        other_mask = [coord in common for coord in zip(other.rows, other.cols)]
+        self_inds = np.where(self_mask)[0]
+        other_inds = np.where(other_mask)[0]
+        data = [self.data[i] * other.data[j] for i, j in zip(self_inds, other_inds)]
+
+        return BCOO(
+            rows,
+            cols,
+            data,
+            self.bshape,
+            np.result_type(self, other),
+            (self.row_sizes, self.col_sizes),
+            self.symmetry,
+        )
+
+    def __rmul__(
+        self, other: Number | BSparse | np.ndarray | sp.spmatrix
+    ) -> "BCOO | np.ndarray":
         """Multiplies this matrix by another matrix or a scalar."""
-        ...
+        return self * other
 
-    def __truediv__(self, other: "np.number | BSparse") -> "BCOO":
+    def __truediv__(
+        self, other: Number | BSparse | np.ndarray | sp.spmatrix
+    ) -> "BCOO | np.ndarray":
         """Divides this matrix by another matrix or a scalar."""
-        ...
+        if isinstance(other, Number):
+            if self.symmetry == "hermitian" and np.iscomplexobj(other):
+                self = self._desymmetrize()
+            result = BCOO(
+                self.rows.copy(),
+                self.cols.copy(),
+                [b / other for b in self.data],
+                self.bshape,
+                np.result_type(self, other),
+                (self.row_sizes, self.col_sizes),
+                self.symmetry,
+            )
+            return result
+        if isinstance(other, (BSparse, sp.spmatrix)):
+            other = other.toarray()
 
-    def __rtruediv__(self, other: "np.number | BSparse") -> "BCOO":
+        if not isinstance(other, np.ndarray):
+            raise TypeError("Invalid type.")
+
+        return self.toarray() / other
+
+    def __rtruediv__(
+        self, other: Number | BSparse | np.ndarray | sp.spmatrix
+    ) -> "BCOO | np.ndarray":
         """Divides another matrix or a scalar by this matrix."""
-        ...
+        if isinstance(other, Number):
+            return other / self.toarray()
+        if isinstance(other, (BSparse, sp.spmatrix)):
+            other = other.toarray()
+
+        if not isinstance(other, np.ndarray):
+            raise TypeError("Invalid type.")
+
+        return other / self.toarray()
 
     def __neg__(self) -> "BCOO":
         """Negates this matrix."""
-        ...
+        result = BCOO(
+            self.rows.copy(),
+            self.cols.copy(),
+            [-b for b in self.data],
+            self.bshape,
+            self.dtype,
+            (self.row_sizes, self.col_sizes),
+            self.symmetry,
+        )
+        return result
 
-    def __matmul__(self, other: "BSparse") -> "BCOO":
+    def __matmul__(
+        self, other: Number | BSparse | np.ndarray | sp.spmatrix
+    ) -> "BCOO | np.ndarray":
         """Multiplies this matrix by another matrix."""
-        ...
+        if isinstance(other, np.ndarray):
+            return self.toarray() @ other
+        if isinstance(other, BSparse):
+            other = other.tocoo()
+        if isinstance(other, sp.spmatrix):
+            warn(
+                "Automatically inferring block sizes from sparse matrix. "
+                "This may result in unexpected behavior. Consider "
+                "converting to a `BSparse` matrix."
+            )
+            other = BCOO.from_spmatrix(other, (self.col_sizes, [1] * other.shape[1]))
 
-    def __rmatmul__(self, other: "BSparse") -> "BCOO":
+        if not isinstance(other, BCOO):
+            raise TypeError("Invalid type.")
+
+        if self.bshape[1] != other.bshape[0]:
+            raise ValueError("Incompatible matrix shapes.")
+        if np.any(self.col_sizes != other.row_sizes):
+            raise ValueError("Incompatible block sizes.")
+
+        if self.symmetry is not None or other.symmetry is not None:
+            return self._desymmetrize() @ other._desymmetrize()
+
+        rows, cols, data = [], [], []
+        for a_row, a_col, a in zip(self.rows, self.cols, self.data):
+            for b_row, b_col, b in zip(other.rows, other.cols, other.data):
+                if a_col == b_row:
+                    rows.append(a_row)
+                    cols.append(b_col)
+                    data.append(a @ b)
+
+        coords, inverse = np.unique(list(zip(rows, cols)), axis=0, return_inverse=True)
+
+        # This is just a weighted bincount.
+        new_data = [None] * (inverse.max() + 1)
+        for i, inv in enumerate(inverse):
+            if new_data[inv] is None:
+                new_data[inv] = data[i].copy()
+                continue
+            new_data[inv] += data[i].copy()
+
+        mask = [
+            np.any(b != 0) if isinstance(b, np.ndarray) else b.nnz != 0
+            for b in new_data
+        ]
+
+        return BCOO(
+            coords[:, 0][mask],
+            coords[:, 1][mask],
+            [b for b, m in zip(new_data, mask) if m],
+            (self.bshape[0], other.bshape[1]),
+            np.result_type(self, other),
+            (self.row_sizes, other.col_sizes),
+            self.symmetry,
+        )
+
+    def __rmatmul__(
+        self, other: Number | BSparse | np.ndarray | sp.spmatrix
+    ) -> "BCOO | np.ndarray":
         """Multiplies another matrix by this matrix."""
-        ...
+        if isinstance(other, np.ndarray):
+            return other @ self.toarray()
+        if isinstance(other, BSparse):
+            return other.tocoo() @ self
+        if isinstance(other, sp.spmatrix):
+            warn(
+                "Automatically inferring block sizes from sparse matrix. "
+                "This may result in unexpected behavior. Consider "
+                "converting to a `BSparse` matrix."
+            )
+            return (
+                BCOO.from_spmatrix(other, ([1] * other.shape[0], self.row_sizes)) @ self
+            )
 
     @property
     def bshape(self) -> tuple[int, int]:
@@ -441,11 +699,12 @@ class BCOO(BSparse):
         if self.symmetry == "hermitian":
             return self.conjugate()
         transpose = BCOO(
-            self.cols,
-            self.rows,
+            self.cols.copy(),
+            self.rows.copy(),
             [b.T for b in self.data],
             (self.bshape[1], self.bshape[0]),
             self.dtype,
+            (self.col_sizes, self.row_sizes),
             self.symmetry,
         )
         return transpose
@@ -463,6 +722,7 @@ class BCOO(BSparse):
             [b.conjugate().T for b in self.data],
             (self.bshape[1], self.bshape[0]),
             self.dtype,
+            (self.col_sizes, self.row_sizes),
             self.symmetry,
         )
         return hermitian
@@ -475,6 +735,7 @@ class BCOO(BSparse):
             [b.conjugate() for b in self.data],
             self.bshape,
             self.dtype,
+            (self.row_sizes, self.col_sizes),
             self.symmetry,
         )
         return conjugate
@@ -521,6 +782,7 @@ class BCOO(BSparse):
             self.data.copy(),
             self.bshape,
             self.dtype,
+            (self.row_sizes, self.col_sizes),
             self.symmetry,
         )
 
@@ -532,6 +794,7 @@ class BCOO(BSparse):
             self.data.copy(),
             self.bshape,
             dtype,
+            (self.row_sizes, self.col_sizes),
             self.symmetry,
         )
         return new
@@ -581,6 +844,7 @@ class BCOO(BSparse):
             self.data,
             self.bshape,
             self.dtype,
+            (self.row_sizes, self.col_sizes),
             self.symmetry,
         )
         return csr
@@ -605,8 +869,22 @@ class BCOO(BSparse):
         from bsparse.bdia import BDIA
 
         if len(offsets) == 0:
-            return BDIA([], [[]], self.bshape, self.dtype, self.symmetry)
-        return BDIA(offsets, data, self.bshape, self.dtype, self.symmetry)
+            return BDIA(
+                [],
+                [[]],
+                self.bshape,
+                self.dtype,
+                (self.row_sizes, self.col_sizes),
+                self.symmetry,
+            )
+        return BDIA(
+            offsets,
+            data,
+            self.bshape,
+            self.dtype,
+            (self.row_sizes, self.col_sizes),
+            self.symmetry,
+        )
 
     def save_npz(self, filename: str) -> None:
         """Saves the matrix to a `numpy.npz` file."""
@@ -618,6 +896,8 @@ class BCOO(BSparse):
             data=self.data,
             bshape=self.bshape,
             dtype=self.dtype,
+            row_sizes=self.row_sizes,
+            col_sizes=self.col_sizes,
             symmetry=self.symmetry,
         )
 
@@ -649,7 +929,13 @@ class BCOO(BSparse):
                 data.append(b)
 
         return cls(
-            rows, cols, data, (len(row_sizes), len(col_sizes)), symmetry=symmetry
+            rows,
+            cols,
+            data,
+            (len(row_sizes), len(col_sizes)),
+            dtype=arr.dtype,
+            sizes=sizes,
+            symmetry=symmetry,
         )
 
     @classmethod
@@ -680,5 +966,11 @@ class BCOO(BSparse):
                 data.append(b)
 
         return cls(
-            rows, cols, data, (len(row_sizes), len(col_sizes)), symmetry=symmetry
+            rows,
+            cols,
+            data,
+            (len(row_sizes), len(col_sizes)),
+            dtype=mat.dtype,
+            sizes=sizes,
+            symmetry=symmetry,
         )
