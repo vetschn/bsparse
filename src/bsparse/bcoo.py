@@ -155,7 +155,7 @@ class BCOO(BSparse):
     def _desymmetrize(self) -> "BCOO":
         """Removes symmetry from the matrix."""
         if self.symmetry is None:
-            return self.copy()
+            return self
 
         mask = self.rows != self.cols
         rows = np.concatenate((self.rows, self.cols[mask]))
