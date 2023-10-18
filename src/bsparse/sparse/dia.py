@@ -93,9 +93,27 @@ class DIA(Sparse):
                 "Symmetric matrix is not upper triangular. "
                 "Lower triangular part is discarded."
             )
-            ind = self.offsets >= 0
-            self.offsets = self.offsets[ind]
-            self.data = self.data[ind]
+            mask = self.offsets >= 0
+            self.offsets = self.offsets[mask]
+            self.data = self.data[mask]
+
+    def _desymmetrize(self) -> "DIA":
+        """Remove symmetry from the matrix."""
+        if self.symmetry is None:
+            return self.copy()
+
+        mask = self.offsets > 0
+        lower_offsets = -self.offsets[mask]
+        lower_data = (
+            self.data[mask] if self.symmetry == "symmetric" else self.data[mask].conj()
+        )
+        lower_data = [
+            np.roll(diag, offset) for offset, diag in zip(lower_offsets, lower_data)
+        ]
+
+        offsets = np.concatenate((self.offsets, lower_offsets))
+        data = np.concatenate((self.data, lower_data))
+        return DIA(offsets, data, self.shape, self.dtype, None)
 
     def _sort_diagonals(self) -> None:
         """Sort the diagonals by offset."""
@@ -214,49 +232,230 @@ class DIA(Sparse):
             return
         self.data = np.vstack((self.data, data))
 
-    def __add__(self, other: "Number | DIA") -> "DIA":
+    def __add__(
+        self, other: Number | Sparse | np.ndarray | sp.spmatrix
+    ) -> "DIA | np.ndarray":
         """Adds another matrix or a scalar to this matrix."""
-        ...
+        if isinstance(other, Number):
+            if other == 0:
+                return self.copy()
+            raise NotImplementedError
+        if isinstance(other, np.ndarray):
+            return self.toarray() + other
+        if isinstance(other, Sparse):
+            other = other.todia()
+        if isinstance(other, sp.spmatrix):
+            other = DIA.from_spmatrix(other)
 
-    def __radd__(self, other: "Number | DIA") -> "DIA":
+        if not isinstance(other, DIA):
+            raise TypeError("Invalid type.")
+
+        if self.shape != other.shape:
+            raise ValueError("Incompatible matrix shapes.")
+
+        if self.symmetry != other.symmetry:
+            return self._desymmetrize() + other._desymmetrize()
+
+        offsets = np.unique(np.concatenate((self.offsets, other.offsets)))
+        data = np.zeros(
+            (len(offsets), self.shape[1]), dtype=np.result_type(self, other)
+        )
+        for offset in offsets:
+            if offset in self.offsets:
+                data[offsets == offset] += self.data[self.offsets == offset]
+            if offset in other.offsets:
+                data[offsets == offset] += other.data[other.offsets == offset]
+
+        return DIA(
+            offsets, data, self.shape, np.result_type(self, other), self.symmetry
+        )
+
+    def __radd__(
+        self, other: Number | Sparse | np.ndarray | sp.spmatrix
+    ) -> "DIA | np.ndarray":
         """Adds this matrix to another matrix or a scalar."""
-        ...
+        return self + other
 
-    def __sub__(self, other: "Number | DIA") -> "DIA":
+    def __sub__(
+        self, other: Number | Sparse | np.ndarray | sp.spmatrix
+    ) -> "DIA | np.ndarray":
         """Subtracts another matrix or a scalar from this matrix."""
-        ...
+        return self + (-other)
 
-    def __rsub__(self, other: "Number | DIA") -> "DIA":
+    def __rsub__(
+        self, other: Number | Sparse | np.ndarray | sp.spmatrix
+    ) -> "DIA | np.ndarray":
         """Subtracts this matrix from another matrix or a scalar."""
-        ...
+        return (-self) + other
 
-    def __mul__(self, other: "Number | DIA") -> "DIA":
+    def __mul__(
+        self, other: Number | Sparse | np.ndarray | sp.spmatrix
+    ) -> "DIA | np.ndarray":
         """Multiplies another matrix or a scalar by this matrix."""
-        ...
+        if isinstance(other, Number):
+            if self.symmetry == "hermitian" and np.iscomplexobj(other):
+                return self._desymmetrize() * other
+            result = DIA(
+                self.offsets.copy(),
+                self.data.copy() * other,
+                self.shape,
+                np.result_type(self, other),
+                self.symmetry,
+            )
+            return result
+        if isinstance(other, np.ndarray):
+            return self.toarray() * other
+        if isinstance(other, Sparse):
+            other = other.todia()
+        if isinstance(other, sp.spmatrix):
+            other = DIA.from_spmatrix(other)
 
-    def __rmul__(self, other: "Number | DIA") -> "DIA":
+        if not isinstance(other, DIA):
+            raise TypeError("Invalid type.")
+
+        if self.shape != other.shape:
+            raise ValueError("Incompatible matrix shapes.")
+
+        if self.symmetry != other.symmetry:
+            return self._desymmetrize() * other._desymmetrize()
+
+        offsets = np.intersect1d(self.offsets, other.offsets)
+        data = np.zeros(
+            (len(offsets), self.shape[1]), dtype=np.result_type(self, other)
+        )
+        for i, offset in enumerate(offsets):
+            data[i] = (
+                self.data[self.offsets == offset] * other.data[other.offsets == offset]
+            )
+
+        return DIA(
+            offsets, data, self.shape, np.result_type(self, other), self.symmetry
+        )
+
+    def __rmul__(
+        self, other: Number | Sparse | np.ndarray | sp.spmatrix
+    ) -> "DIA | np.ndarray":
         """Multiplies this matrix by another matrix or a scalar."""
-        ...
+        return self * other
 
-    def __truediv__(self, other: "Number | DIA") -> "DIA":
+    def __truediv__(
+        self, other: Number | Sparse | np.ndarray | sp.spmatrix
+    ) -> "DIA | np.ndarray":
         """Divides this matrix by another matrix or a scalar."""
-        ...
+        if isinstance(other, Number):
+            if self.symmetry == "hermitian" and np.iscomplexobj(other):
+                self = self._desymmetrize()
+            result = DIA(
+                self.offsets.copy(),
+                self.data.copy() / other,
+                self.shape,
+                np.result_type(self, other),
+                self.symmetry,
+            )
+            return result
+        if isinstance(other, (Sparse, sp.spmatrix)):
+            other = other.toarray()
 
-    def __rtruediv__(self, other: "Number | DIA") -> "DIA":
+        if not isinstance(other, np.ndarray):
+            raise TypeError("Invalid type.")
+
+        return self.toarray() / other
+
+    def __rtruediv__(
+        self, other: Number | Sparse | np.ndarray | sp.spmatrix
+    ) -> "DIA | np.ndarray":
         """Divides another matrix or a scalar by this matrix."""
-        ...
+        if isinstance(other, Number):
+            return other / self.toarray()
+        if isinstance(other, (Sparse, sp.spmatrix)):
+            other = other.toarray()
+
+        if not isinstance(other, np.ndarray):
+            raise TypeError("Invalid type.")
+
+        return other / self.toarray()
 
     def __neg__(self) -> "DIA":
         """Negates this matrix."""
-        ...
+        result = DIA(
+            self.offsets.copy(),
+            -self.data.copy(),
+            self.shape,
+            self.dtype,
+            self.symmetry,
+        )
+        return result
 
-    def __matmul__(self, other: "DIA") -> "DIA":
+    def __matmul__(
+        self, other: Number | Sparse | np.ndarray | sp.spmatrix
+    ) -> "DIA | np.ndarray":
         """Multiplies this matrix by another matrix."""
-        ...
+        if isinstance(other, np.ndarray):
+            return self.toarray() @ other
+        if isinstance(other, Sparse):
+            other = other.todia()
+        if isinstance(other, sp.spmatrix):
+            other = DIA.from_spmatrix(other)
 
-    def __rmatmul__(self, other: "DIA") -> "DIA":
+        if not isinstance(other, DIA):
+            raise TypeError("Invalid type.")
+
+        if self.shape[1] != other.shape[0]:
+            raise ValueError("Incompatible matrix shapes.")
+
+        if self.symmetry is not None or other.symmetry is not None:
+            # Products of symmetric matrices are not necessarily symmetric.
+            return self._desymmetrize() @ other._desymmetrize()
+
+        offsets = sorted(
+            set(
+                i + j
+                for i in self.offsets
+                for j in other.offsets
+                if -self.shape[0] < i + j < other.shape[1]
+            )
+        )
+        data = np.zeros(
+            (len(offsets), other.shape[1]), dtype=np.result_type(self, other)
+        )
+
+        shape_diff = other.shape[1] - self.shape[1]
+
+        for i in self.offsets:
+            for j in other.offsets:
+                if i + j not in offsets:
+                    continue
+                self_ind = np.where(self.offsets == i)[0][0]
+                other_ind = np.where(other.offsets == j)[0][0]
+                if shape_diff < 0:
+                    self_data = np.roll(self.data[self_ind], j)[:shape_diff]
+                else:
+                    self_data = np.roll(
+                        np.concatenate(
+                            (self.data[self_ind], np.zeros(shape_diff, data.dtype))
+                        ),
+                        j,
+                    )
+                data[offsets.index(i + j)] += self_data * other.data[other_ind]
+
+        return DIA(
+            offsets,
+            data,
+            (self.shape[0], other.shape[1]),
+            np.result_type(self, other),
+            None,
+        )
+
+    def __rmatmul__(
+        self, other: Number | Sparse | np.ndarray | sp.spmatrix
+    ) -> "DIA | np.ndarray":
         """Multiplies another matrix by this matrix."""
-        ...
+        if isinstance(other, np.ndarray):
+            return other @ self.toarray()
+        if isinstance(other, Sparse):
+            return other.todia() @ self
+        if isinstance(other, sp.spmatrix):
+            return DIA.from_spmatrix(other) @ self
 
     @property
     def shape(self) -> tuple[int, int]:
@@ -451,7 +650,7 @@ class DIA(Sparse):
             data = np.zeros((0, 0), dtype=arr.dtype)
             return cls(offsets, data, arr.shape, symmetry=symmetry)
 
-        data = np.zeros((len(offsets), cols.max() + 1), dtype=arr.dtype)
+        data = np.zeros((len(offsets), arr.shape[1]), dtype=arr.dtype)
         data[offset_indices, cols] = coo_data
 
         return cls(offsets, data, arr.shape, symmetry=symmetry)
@@ -459,5 +658,7 @@ class DIA(Sparse):
     @classmethod
     def from_spmatrix(cls, mat: sp.spmatrix, symmetry: str | None = None) -> "DIA":
         """Creates a sparse matrix from a `scipy.sparse.spmatrix`."""
-        mat = sp.dia_array(mat)
-        return cls(mat.offsets, mat.data, mat.shape, symmetry=symmetry)
+        from bsparse.sparse.coo import COO
+
+        mat = COO.from_spmatrix(mat, symmetry=symmetry)
+        return mat.todia()
