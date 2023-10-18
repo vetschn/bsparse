@@ -127,7 +127,7 @@ def test_multiply(
 @pytest.mark.parametrize(
     "factor",
     [
-        pytest.param(2.5j, id="2j"),
+        pytest.param(2.5j, id="2.5j"),
     ],
 )
 @pytest.mark.parametrize(
@@ -159,8 +159,8 @@ def test_divide(
         spmat = spmat + spmat.T
     if symmetry == "hermitian":
         spmat = spmat + spmat.T.conj()
-    mat = sparse_type.from_spmatrix(spmat, symmetry=symmetry)
-    arr = mat.toarray()
+    arr = spmat.toarray()
+    mat = sparse_type.from_array(arr, symmetry=symmetry)
     assert np.allclose((mat / factor).toarray(), arr / factor)
     assert np.allclose(factor / mat, factor / arr, equal_nan=True)
     assert np.allclose((mat / factor / mat), arr / factor / arr, equal_nan=True)

@@ -103,6 +103,9 @@ class DIA(Sparse):
             return self.copy()
 
         mask = self.offsets > 0
+        if not np.any(mask):
+            return DIA(self.offsets.copy(), self.data.copy(), self.shape, self.dtype)
+
         lower_offsets = -self.offsets[mask]
         lower_data = (
             self.data[mask] if self.symmetry == "symmetric" else self.data[mask].conj()
