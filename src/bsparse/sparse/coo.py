@@ -669,7 +669,7 @@ class COO(Sparse):
             data = np.zeros((0, 0), dtype=self.dtype)
             return DIA(offsets, data, self.shape, self.dtype, self.symmetry)
 
-        data = np.zeros((len(offsets), self.cols.max() + 1), dtype=self.dtype)
+        data = np.zeros((len(offsets), self.shape[1]), dtype=self.dtype)
         data[offset_indices, self.cols] = self.data
 
         return DIA(offsets, data, self.shape, self.dtype, self.symmetry)

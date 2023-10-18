@@ -107,13 +107,14 @@ class DIA(Sparse):
         lower_data = (
             self.data[mask] if self.symmetry == "symmetric" else self.data[mask].conj()
         )
-        lower_data = [
-            np.roll(diag, offset) for offset, diag in zip(lower_offsets, lower_data)
-        ]
+        lower_data = np.array(
+            [np.roll(diag, offset) for offset, diag in zip(lower_offsets, lower_data)],
+            ndmin=2,
+        )
 
         offsets = np.concatenate((self.offsets, lower_offsets))
         data = np.concatenate((self.data, lower_data))
-        return DIA(offsets, data, self.shape, self.dtype, None)
+        return DIA(offsets, data, self.shape, self.dtype)
 
     def _sort_diagonals(self) -> None:
         """Sort the diagonals by offset."""
