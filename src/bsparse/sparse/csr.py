@@ -103,6 +103,30 @@ class CSR(Sparse):
             self.cols = self.cols[mask]
             self.data = self.data[mask]
 
+    def _desymmetrize(self) -> "CSR":
+        """Removes symmetry."""
+        if self.symmetry is None:
+            return self
+
+        self_rows = self._expand_rows()
+        mask = self_rows != self.cols
+        rows = np.concatenate((self_rows, self.cols[mask]))
+        cols = np.concatenate((self.cols, self_rows[mask]))
+        lower_data = (
+            self.data[mask] if self.symmetry == "symmetric" else self.data[mask].conj()
+        )
+        data = np.concatenate((self.data, lower_data))
+        from bsparse.sparse import COO
+
+        result = COO(
+            rows,
+            cols,
+            data,
+            self.shape,
+            self.dtype,
+        )
+        return result.tocsr()
+
     def _unsign_index(self, row: int, col: int) -> tuple:
         """Adjusts the sign to allow negative indices and checks bounds."""
         row = self.shape[0] + row if row < 0 else row
@@ -284,41 +308,147 @@ class CSR(Sparse):
         self.cols = np.insert(self.cols, self.rowptr[row + 1] - 1, col)
         self.data = np.insert(self.data, self.rowptr[row + 1] - 1, value)
 
-    def __add__(self, other: "Number | CSR") -> "CSR":
+    def __add__(
+        self, other: Number | Sparse | np.ndarray | sp.spmatrix
+    ) -> "CSR | np.ndarray":
         """Adds another matrix or a scalar to this matrix."""
-        ...
+        result = self.tocoo() + other
+        if isinstance(result, np.ndarray):
+            return result
+        return result.tocsr()
 
-    def __sub__(self, other: "Number | CSR") -> "CSR":
+    def __radd__(
+        self, other: Number | Sparse | np.ndarray | sp.spmatrix
+    ) -> "CSR | np.ndarray":
+        """Adds this matrix to another matrix or a scalar."""
+        return self + other
+
+    def __sub__(
+        self, other: Number | Sparse | np.ndarray | sp.spmatrix
+    ) -> "CSR | np.ndarray":
         """Subtracts another matrix or a scalar from this matrix."""
-        ...
+        return self + (-other)
 
-    def __rsub__(self, other: "Number | CSR") -> "CSR":
+    def __rsub__(
+        self, other: Number | Sparse | np.ndarray | sp.spmatrix
+    ) -> "CSR | np.ndarray":
         """Subtracts this matrix from another matrix or a scalar."""
-        ...
+        return other + (-self)
 
-    def __mul__(self, other: "Number | CSR") -> "CSR":
+    def __mul__(
+        self, other: Number | Sparse | np.ndarray | sp.spmatrix
+    ) -> "CSR | np.ndarray":
         """Multiplies another matrix or a scalar by this matrix."""
-        ...
+        result = self.tocoo() * other
+        if isinstance(result, np.ndarray):
+            return result
+        return result.tocsr()
 
-    def __truediv__(self, other: "Number | CSR") -> "CSR":
+    def __rmul__(
+        self, other: Number | Sparse | np.ndarray | sp.spmatrix
+    ) -> "CSR | np.ndarray":
+        """Multiplies this matrix by another matrix or a scalar."""
+        return self * other
+
+    def __truediv__(
+        self, other: Number | Sparse | np.ndarray | sp.spmatrix
+    ) -> "CSR | np.ndarray":
         """Divides this matrix by another matrix or a scalar."""
-        ...
+        result = self.tocoo() / other
+        if isinstance(result, np.ndarray):
+            return result
+        return result.tocsr()
 
-    def __rtruediv__(self, other: "Number | CSR") -> "CSR":
+    def __rtruediv__(
+        self, other: Number | Sparse | np.ndarray | sp.spmatrix
+    ) -> "CSR | np.ndarray":
         """Divides another matrix or a scalar by this matrix."""
-        ...
+        result = other / self.tocoo()
+        if isinstance(result, np.ndarray):
+            return result
+        return result.tocsr()
 
     def __neg__(self) -> "CSR":
         """Negates this matrix."""
-        ...
+        result = CSR(
+            self.rowptr.copy(),
+            self.cols.copy(),
+            -self.data.copy(),
+            self.shape,
+            self.dtype,
+            self.symmetry,
+        )
+        return result
 
-    def __matmul__(self, other: "CSR") -> "CSR":
+    def _matmul_dense(self, other: np.ndarray) -> np.ndarray:
+        """Multiplies this matrix by a dense matrix."""
+        if self.shape[1] != other.shape[0]:
+            raise ValueError("Incompatible matrix shapes.")
+
+        result = np.zeros((self.shape[0], other.shape[1]), dtype=self.dtype)
+        for i in range(self.shape[0]):
+            for j, a in zip(self._get_cols(i), self._get_data(i)):
+                result[i] += a * other[j]
+        return result
+
+    def __matmul__(
+        self, other: Number | Sparse | np.ndarray | sp.spmatrix
+    ) -> "CSR | np.ndarray":
         """Multiplies this matrix by another matrix."""
-        ...
+        if isinstance(other, np.ndarray):
+            return self._desymmetrize()._matmul_dense(other)
+        if isinstance(other, Sparse):
+            other = other.tocsr()
+        if isinstance(other, sp.spmatrix):
+            other = CSR.from_spmatrix(other)
 
-    def __rmatmul__(self, other: "CSR") -> "CSR":
+        if not isinstance(other, CSR):
+            raise TypeError("Invalid type.")
+
+        if self.shape[1] != other.shape[0]:
+            raise ValueError("Incompatible matrix shapes.")
+
+        if self.symmetry is not None or other.symmetry is not None:
+            # Products of symmetric matrices are not necessarily symmetric.
+            return self._desymmetrize() @ other._desymmetrize()
+
+        result_rowptr = [0]
+        result_cols = []
+        result_data = []
+        for i in range(self.shape[0]):
+            data = []
+            cols = []
+            for j, a in zip(self._get_cols(i), self._get_data(i)):
+                for k, b in zip(other._get_cols(j), other._get_data(j)):
+                    if k in cols:
+                        data[cols.index(k)] += a * b
+                    else:
+                        cols.append(k)
+                        data.append(a * b)
+            result_cols.extend(cols)
+            result_data.extend(data)
+            result_rowptr.append(len(result_cols))
+
+        result = CSR(
+            result_rowptr,
+            result_cols,
+            result_data,
+            (self.shape[0], other.shape[1]),
+            self.dtype,
+        )
+
+        return result
+
+    def __rmatmul__(
+        self, other: Number | Sparse | np.ndarray | sp.spmatrix
+    ) -> "CSR | np.ndarray":
         """Multiplies another matrix by this matrix."""
-        ...
+        if isinstance(other, np.ndarray):
+            return other @ self.toarray()
+        if isinstance(other, Sparse):
+            return other.tocsr() @ self
+        if isinstance(other, sp.spmatrix):
+            return CSR.from_spmatrix(other) @ self
 
     @property
     def shape(self) -> tuple[int, int]:

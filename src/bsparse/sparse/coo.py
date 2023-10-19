@@ -5,6 +5,7 @@ import numpy as np
 import scipy.sparse as sp
 from numpy.typing import ArrayLike
 
+from bsparse import sparse
 from bsparse.sparse.sparse import Sparse
 
 
@@ -102,6 +103,27 @@ class COO(Sparse):
             self.rows = self.rows[ind]
             self.cols = self.cols[ind]
             self.data = self.data[ind]
+
+    def _desymmetrize(self) -> "COO":
+        """Removes symmetry."""
+        if self.symmetry is None:
+            return self
+
+        mask = self.rows != self.cols
+        rows = np.concatenate((self.rows, self.cols[mask]))
+        cols = np.concatenate((self.cols, self.rows[mask]))
+        lower_data = (
+            self.data[mask] if self.symmetry == "symmetric" else self.data[mask].conj()
+        )
+        data = np.concatenate((self.data, lower_data))
+        result = COO(
+            rows,
+            cols,
+            data,
+            self.shape,
+            self.dtype,
+        )
+        return result
 
     def _sort_indices(self) -> None:
         """Sorts the indices lexicographically."""
@@ -262,41 +284,246 @@ class COO(Sparse):
         self.cols = np.append(self.cols, col)
         self.data = np.append(self.data, value)
 
-    def __add__(self, other: "Number | COO") -> "COO":
+    def __add__(
+        self, other: Number | Sparse | np.ndarray | sp.spmatrix
+    ) -> "COO | np.ndarray":
         """Adds another matrix or a scalar to this matrix."""
-        ...
+        if isinstance(other, Number):
+            if other == 0:
+                return self.copy()
+            raise NotImplementedError
+        if isinstance(other, np.ndarray):
+            return self.toarray() + other
+        if isinstance(other, Sparse):
+            other = other.tocoo()
+        if isinstance(other, sp.spmatrix):
+            other = COO.from_spmatrix(other)
 
-    def __sub__(self, other: "Number | COO") -> "COO":
+        if not isinstance(other, COO):
+            raise TypeError("Invalid type.")
+
+        if self.shape != other.shape:
+            raise ValueError("Incompatible matrix shapes.")
+
+        if self.symmetry == other.symmetry:
+            if self.nnz == 0:
+                return other.copy()
+            if other.nnz == 0:
+                return self.copy()
+
+            rows = np.concatenate((self.rows, other.rows))
+            cols = np.concatenate((self.cols, other.cols))
+            data = np.concatenate((self.data, other.data))
+            coords, inverse = np.unique(
+                list(zip(rows, cols)), axis=0, return_inverse=True
+            )
+
+            data = np.bincount(inverse, weights=data)
+            ind = np.nonzero(data)
+            result = COO(
+                coords[:, 0][ind],
+                coords[:, 1][ind],
+                data[ind],
+                self.shape,
+                np.result_type(self.dtype, other.dtype),
+                self.symmetry,
+            )
+            return result
+
+        return self._desymmetrize() + other._desymmetrize()
+
+    def __radd__(
+        self, other: Number | Sparse | np.ndarray | sp.spmatrix
+    ) -> "COO | np.ndarray":
+        """Adds this matrix to another matrix or a scalar."""
+        return self + other
+
+    def __sub__(
+        self, other: Number | Sparse | np.ndarray | sp.spmatrix
+    ) -> "COO | np.ndarray":
         """Subtracts another matrix or a scalar from this matrix."""
-        ...
+        return self + (-other)
 
-    def __rsub__(self, other: "Number | COO") -> "COO":
+    def __rsub__(
+        self, other: Number | Sparse | np.ndarray | sp.spmatrix
+    ) -> "COO | np.ndarray":
         """Subtracts this matrix from another matrix or a scalar."""
-        ...
+        return other + (-self)
 
-    def __mul__(self, other: "Number | COO") -> "COO":
+    def __mul__(
+        self, other: Number | Sparse | np.ndarray | sp.spmatrix
+    ) -> "COO | np.ndarray":
         """Multiplies another matrix or a scalar by this matrix."""
-        ...
+        if isinstance(other, Number):
+            if self.symmetry == "hermitian" and np.iscomplexobj(other):
+                self = self._desymmetrize()
+            result = COO(
+                self.rows.copy(),
+                self.cols.copy(),
+                self.data.copy() * other,
+                self.shape,
+                np.result_type(self, other),
+                self.symmetry,
+            )
+            return result
+        if isinstance(other, np.ndarray):
+            return self.toarray() * other
+        if isinstance(other, Sparse):
+            other = other.tocoo()
+        if isinstance(other, sp.spmatrix):
+            other = COO.from_spmatrix(other)
 
-    def __truediv__(self, other: "Number | COO") -> "COO":
+        if not isinstance(other, COO):
+            raise TypeError("Invalid type.")
+
+        if self.shape != other.shape:
+            raise ValueError("Incompatible matrix shapes.")
+
+        if self.symmetry == other.symmetry:
+            if self.nnz == 0 or other.nnz == 0:
+                return sparse.zeros(
+                    self.shape,
+                    np.result_type(self.dtype, other.dtype),
+                    self.symmetry,
+                    format="coo",
+                )
+            common = set(zip(self.rows, self.cols)) & set(zip(other.rows, other.cols))
+            self_mask = [coord in common for coord in zip(self.rows, self.cols)]
+            other_mask = [coord in common for coord in zip(other.rows, other.cols)]
+            rows, cols = zip(*common)
+            inds = np.lexsort((cols, rows))
+            rows = np.array(rows)[inds]
+            cols = np.array(cols)[inds]
+            data = self.data[self_mask] * other.data[other_mask]
+            result = COO(
+                rows,
+                cols,
+                data,
+                self.shape,
+                np.result_type(self, other),
+                self.symmetry,
+            )
+            return result
+
+        return self._desymmetrize() * other._desymmetrize()
+
+    def __rmul__(
+        self, other: Number | Sparse | np.ndarray | sp.spmatrix
+    ) -> "COO | np.ndarray":
+        """Multiplies this matrix by another matrix or a scalar."""
+        return self * other
+
+    def __truediv__(self, other: Number | Sparse | sp.spmatrix) -> "COO | np.ndarray":
         """Divides this matrix by another matrix or a scalar."""
-        ...
+        if isinstance(other, Number):
+            if self.symmetry == "hermitian" and np.iscomplexobj(other):
+                self = self._desymmetrize()
+            result = COO(
+                self.rows.copy(),
+                self.cols.copy(),
+                self.data.copy() / other,
+                self.shape,
+                np.result_type(self, other),
+                self.symmetry,
+            )
+            return result
+        if isinstance(other, (Sparse, sp.spmatrix)):
+            other = other.toarray()
 
-    def __rtruediv__(self, other: "Number | COO") -> "COO":
+        if not isinstance(other, np.ndarray):
+            raise TypeError("Invalid type.")
+
+        return self.toarray() / other
+
+    def __rtruediv__(self, other: Number | Sparse | sp.spmatrix) -> "COO | np.ndarray":
         """Divides another matrix or a scalar by this matrix."""
-        ...
+        if isinstance(other, Number):
+            return other / self.toarray()
+        if isinstance(other, (Sparse, sp.spmatrix)):
+            other = other.toarray()
+
+        if not isinstance(other, np.ndarray):
+            raise TypeError("Invalid type.")
+
+        return other / self.toarray()
 
     def __neg__(self) -> "COO":
         """Negates this matrix."""
-        ...
+        result = COO(
+            self.rows.copy(),
+            self.cols.copy(),
+            -self.data.copy(),
+            self.shape,
+            self.dtype,
+            self.symmetry,
+        )
+        return result
 
-    def __matmul__(self, other: "COO") -> "COO":
+    def __matmul__(
+        self, other: Sparse | sp.spmatrix | np.ndarray
+    ) -> "COO | np.ndarray":
         """Multiplies this matrix by another matrix."""
-        ...
+        if isinstance(other, np.ndarray):
+            return self.toarray() @ other
+        if isinstance(other, Sparse):
+            other = other.tocoo()
+        if isinstance(other, sp.spmatrix):
+            other = COO.from_spmatrix(other)
+
+        if not isinstance(other, COO):
+            raise TypeError("Invalid type.")
+
+        if self.shape[1] != other.shape[0]:
+            raise ValueError("Incompatible matrix shapes.")
+
+        if self.symmetry is not None or other.symmetry is not None:
+            # Products of symmetric matrices are not necessarily symmetric.
+            return self._desymmetrize() @ other._desymmetrize()
+
+        if self.nnz == 0 or other.nnz == 0:
+            return sparse.zeros(
+                (self.shape[0], other.shape[1]),
+                np.result_type(self.dtype, other.dtype),
+                self.symmetry,
+                format="coo",
+            )
+
+        rows, cols, data = [], [], []
+        for a_row, a_col, a in zip(self.rows, self.cols, self.data):
+            for b_row, b_col, b in zip(other.rows, other.cols, other.data):
+                if a_col == b_row:
+                    rows.append(a_row)
+                    cols.append(b_col)
+                    data.append(a * b)
+
+        coords, inverse = np.unique(list(zip(rows, cols)), axis=0, return_inverse=True)
+        data = np.bincount(inverse, weights=data)
+        ind = np.nonzero(data)
+        if len(ind) == 0:
+            return sparse.zeros(
+                (self.shape[0], other.shape[1]),
+                self.dtype,
+                self.symmetry,
+                format="coo",
+            )
+        result = COO(
+            coords[:, 0][ind],
+            coords[:, 1][ind],
+            data[ind],
+            (self.shape[0], other.shape[1]),
+            np.result_type(self, other),
+            self.symmetry,
+        )
+        return result
 
     def __rmatmul__(self, other: "COO") -> "COO":
         """Multiplies another matrix by this matrix."""
-        ...
+        if isinstance(other, np.ndarray):
+            return other @ self.toarray()
+        if isinstance(other, Sparse):
+            return other.tocoo() @ self
+        if isinstance(other, sp.spmatrix):
+            return COO.from_spmatrix(other) @ self
 
     @property
     def shape(self) -> tuple[int, int]:
@@ -463,7 +690,7 @@ class COO(Sparse):
             data = np.zeros((0, 0), dtype=self.dtype)
             return DIA(offsets, data, self.shape, self.dtype, self.symmetry)
 
-        data = np.zeros((len(offsets), self.cols.max() + 1), dtype=self.dtype)
+        data = np.zeros((len(offsets), self.shape[1]), dtype=self.dtype)
         data[offset_indices, self.cols] = self.data
 
         return DIA(offsets, data, self.shape, self.dtype, self.symmetry)

@@ -130,6 +130,8 @@ html_theme_options = {
     "icon_links": [],  # See https://github.com/pydata/pydata-sphinx-theme/issues/1220
 }
 
+html_css_files = ["bsparse.css"]
+
 html_context = {"default_mode": "light"}
 # Add any paths that contain custom themes here, relative to this directory.
 # html_theme_path = []

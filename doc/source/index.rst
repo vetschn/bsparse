@@ -4,7 +4,6 @@
     :maxdepth: 1
     :hidden:
 
-    User Guide <guide/index>
     API Reference <api/index>
 
 bsparse

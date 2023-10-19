@@ -1,4 +1,4 @@
-from numbers import Integral
+from numbers import Integral, Number
 from warnings import warn
 
 import numpy as np
@@ -32,6 +32,9 @@ class BCSR(BSparse):
     dtype : numpy.dtype, optional
         The data type of the matrix elements. If not given, it is
         inferred from the data array.
+    sizes : tuple[np.ndarray, np.ndarray], optional
+        The sizes of the blocks. If not given, they are inferred from
+        ``data``.
     symmetry : str, optional
         The symmetry of the matrix. If not given, no symmetry is
         assumed. This is only applicable for square matrices, where
@@ -48,6 +51,7 @@ class BCSR(BSparse):
         data: ArrayLike,
         bshape: tuple | None = None,
         dtype: np.dtype | None = None,
+        sizes: tuple[np.ndarray, np.ndarray] | None = None,
         symmetry: str | None = None,
     ) -> None:
         """Initializes a ``BCSR`` matrix."""
@@ -69,8 +73,12 @@ class BCSR(BSparse):
 
         self._check_alignment()
 
-        self._row_sizes = self.row_sizes
-        self._col_sizes = self.col_sizes
+        if sizes is not None:
+            self._row_sizes = np.asarray(sizes[0], dtype=int)
+            self._col_sizes = np.asarray(sizes[1], dtype=int)
+        else:
+            self._row_sizes = self.row_sizes
+            self._col_sizes = self.col_sizes
 
     def _validate_data(self, data: ArrayLike) -> list:
         """Validates the data blocks of the matrix."""
@@ -143,6 +151,13 @@ class BCSR(BSparse):
             self.rowptr = rowptr
             self.cols = self.cols[mask]
             self.data = [b for b, m in zip(self.data, mask) if m]
+
+    def _desymmetrize(self) -> "BCSR":
+        """Removes symmetry."""
+        if self.symmetry is None:
+            return self
+
+        return self.tocoo()._desymmetrize().tocsr()
 
     def _unsign_index(self, row: int, col: int) -> tuple:
         """Adjusts the sign to allow negative indices and checks bounds."""
@@ -331,6 +346,8 @@ class BCSR(BSparse):
                 self.rowptr[row + 1 :] -= 1
                 self.cols = self.cols[mask]
                 self.data = [b for b, m in zip(self.data, mask) if m]
+                self._row_sizes[row] = value.shape[0]
+                self._col_sizes[col] = value.shape[1]
                 return
             ind = np.nonzero(mask)[0][0]
             self.data[ind] = value
@@ -355,41 +372,168 @@ class BCSR(BSparse):
         self._row_sizes[row] = value.shape[0]
         self._col_sizes[col] = value.shape[1]
 
-    def __add__(self, other: "np.number | BSparse") -> "BCSR":
+    def __add__(
+        self, other: Number | BSparse | np.ndarray | sp.spmatrix
+    ) -> "BCSR | np.ndarray":
         """Adds another matrix or a scalar to this matrix."""
-        ...
+        result = self.tocoo() + other
+        if isinstance(result, np.ndarray):
+            return result
+        return result.tocsr()
 
-    def __sub__(self, other: "np.number | BSparse") -> "BCSR":
+    def __radd__(
+        self, other: Number | BSparse | np.ndarray | sp.spmatrix
+    ) -> "BCSR | np.ndarray":
+        """Adds this matrix to another matrix or a scalar."""
+        return self + other
+
+    def __sub__(
+        self, other: Number | BSparse | np.ndarray | sp.spmatrix
+    ) -> "BCSR | np.ndarray":
         """Subtracts another matrix or a scalar from this matrix."""
-        ...
+        return self + (-other)
 
-    def __rsub__(self, other: "np.number | BSparse") -> "BCSR":
+    def __rsub__(
+        self, other: Number | BSparse | np.ndarray | sp.spmatrix
+    ) -> "BCSR | np.ndarray":
         """Subtracts this matrix from another matrix or a scalar."""
-        ...
+        return other + (-self)
 
-    def __mul__(self, other: "np.number | BSparse") -> "BCSR":
+    def __mul__(
+        self, other: Number | BSparse | np.ndarray | sp.spmatrix
+    ) -> "BCSR | np.ndarray":
         """Multiplies another matrix or a scalar by this matrix."""
-        ...
+        result = self.tocoo() * other
+        if isinstance(result, np.ndarray):
+            return result
+        return result.tocsr()
 
-    def __truediv__(self, other: "np.number | BSparse") -> "BCSR":
+    def __rmul__(
+        self, other: Number | BSparse | np.ndarray | sp.spmatrix
+    ) -> "BCSR | np.ndarray":
+        """Multiplies this matrix by another matrix or a scalar."""
+        return self * other
+
+    def __truediv__(
+        self, other: Number | BSparse | np.ndarray | sp.spmatrix
+    ) -> "BCSR | np.ndarray":
         """Divides this matrix by another matrix or a scalar."""
-        ...
+        result = self.tocoo() / other
+        if isinstance(result, np.ndarray):
+            return result
+        return result.tocsr()
 
-    def __rtruediv__(self, other: "np.number | BSparse") -> "BCSR":
+    def __rtruediv__(
+        self, other: Number | BSparse | np.ndarray | sp.spmatrix
+    ) -> "BCSR | np.ndarray":
         """Divides another matrix or a scalar by this matrix."""
-        ...
+        result = other / self.tocoo()
+        if isinstance(result, np.ndarray):
+            return result
+        return result.tocsr()
 
     def __neg__(self) -> "BCSR":
         """Negates this matrix."""
-        ...
+        result = BCSR(
+            self.rowptr.copy(),
+            self.cols.copy(),
+            [-b for b in self.data],
+            self.bshape,
+            self.dtype,
+            (self.row_sizes, self.col_sizes),
+            self.symmetry,
+        )
+        return result
 
-    def __matmul__(self, other: "BSparse") -> "BCSR":
+    def _matmul_dense(self, other: np.ndarray) -> np.ndarray:
+        """Multiplies this matrix by a dense matrix."""
+        if self.shape[1] != other.shape[0]:
+            raise ValueError("Incompatible matrix shapes.")
+
+        row_offsets = np.cumsum(self.row_sizes) - self.row_sizes
+        col_offsets = np.cumsum(self.col_sizes) - self.col_sizes
+        result = np.zeros(
+            (self.shape[0], other.shape[1]), dtype=np.result_type(self, other)
+        )
+        for i in range(self.bshape[0]):
+            for j, a in zip(self._get_cols(i), self._get_data(i)):
+                result[row_offsets[i] : row_offsets[i] + a.shape[0]] += (
+                    a @ other[col_offsets[j] : col_offsets[j] + a.shape[1]]
+                )
+
+        return result
+
+    def __matmul__(
+        self, other: Number | BSparse | np.ndarray | sp.spmatrix
+    ) -> "BCSR | np.ndarray":
         """Multiplies this matrix by another matrix."""
-        ...
+        if isinstance(other, np.ndarray):
+            return self._desymmetrize()._matmul_dense(other)
+        if isinstance(other, BSparse):
+            other = other.tocsr()
+        if isinstance(other, sp.spmatrix):
+            warn(
+                "Automatically inferring block sizes from sparse matrix. "
+                "This may result in unexpected behavior. Consider "
+                "converting to a `BSparse` matrix."
+            )
+            other = BCSR.from_spmatrix(other, (self.col_sizes, [1] * other.shape[1]))
 
-    def __rmatmul__(self, other: "BSparse") -> "BCSR":
+        if not isinstance(other, BCSR):
+            raise TypeError("Invalid type.")
+
+        if self.bshape[1] != other.bshape[0]:
+            raise ValueError("Incompatible matrix shapes.")
+        if np.any(self.col_sizes != other.row_sizes):
+            raise ValueError("Incompatible block sizes.")
+
+        if self.symmetry is not None or other.symmetry is not None:
+            return self._desymmetrize() @ other._desymmetrize()
+
+        result_rowptr = [0]
+        result_cols = []
+        result_data = []
+        for i in range(self.bshape[0]):
+            data = []
+            cols = []
+            for j, a in zip(self._get_cols(i), self._get_data(i)):
+                for k, b in zip(other._get_cols(j), other._get_data(j)):
+                    if k in cols:
+                        data[cols.index(k)] += a @ b
+                    else:
+                        cols.append(k)
+                        data.append(a @ b)
+            result_cols.extend(cols)
+            result_data.extend(data)
+            result_rowptr.append(len(result_cols))
+
+        result = BCSR(
+            result_rowptr,
+            result_cols,
+            result_data,
+            (self.bshape[0], other.bshape[1]),
+            self.dtype,
+            (self.row_sizes, other.col_sizes),
+        )
+        return result
+
+    def __rmatmul__(
+        self, other: Number | BSparse | np.ndarray | sp.spmatrix
+    ) -> "BCSR | np.ndarray":
         """Multiplies another matrix by this matrix."""
-        ...
+        if isinstance(other, np.ndarray):
+            return other @ self.toarray()
+        if isinstance(other, BSparse):
+            return other.tocoo() @ self
+        if isinstance(other, sp.spmatrix):
+            warn(
+                "Automatically inferring block sizes from sparse matrix. "
+                "This may result in unexpected behavior. Consider "
+                "converting to a `BSparse` matrix."
+            )
+            return (
+                BCSR.from_spmatrix(other, ([1] * other.shape[0], self.row_sizes)) @ self
+            )
 
     @property
     def bshape(self) -> tuple[int, int]:
@@ -462,9 +606,10 @@ class BCSR(BSparse):
         transpose = BCOO(
             self.cols,
             self._expand_rows(),
-            self.data,
-            (self.shape[1], self.shape[0]),
+            [b.T for b in self.data],
+            (self.bshape[1], self.bshape[0]),
             self.dtype,
+            (self.col_sizes, self.row_sizes),
             self.symmetry,
         )
         return transpose.tocsr()
@@ -482,9 +627,10 @@ class BCSR(BSparse):
         hermitian = BCOO(
             self.cols,
             self._expand_rows(),
-            [b.conjugate() for b in self.data],
-            (self.shape[1], self.shape[0]),
+            [b.conjugate().T for b in self.data],
+            (self.bshape[1], self.bshape[0]),
             self.dtype,
+            (self.col_sizes, self.row_sizes),
             self.symmetry,
         )
         return hermitian.tocsr()
@@ -497,6 +643,7 @@ class BCSR(BSparse):
             [b.conjugate() for b in self.data],
             self.bshape,
             self.dtype,
+            (self.row_sizes, self.col_sizes),
             self.symmetry,
         )
         return conjugate
@@ -543,6 +690,7 @@ class BCSR(BSparse):
             self.data.copy(),
             self.bshape,
             self.dtype,
+            (self.row_sizes, self.col_sizes),
             self.symmetry,
         )
 
@@ -554,6 +702,7 @@ class BCSR(BSparse):
             self.data.copy(),
             self.bshape,
             dtype,
+            (self.row_sizes, self.col_sizes),
             self.symmetry,
         )
         return new
@@ -594,6 +743,7 @@ class BCSR(BSparse):
             self.data,
             self.bshape,
             self.dtype,
+            (self.row_sizes, self.col_sizes),
             self.symmetry,
         )
         return bcoo
@@ -616,6 +766,8 @@ class BCSR(BSparse):
             data=self.data,
             bshape=self.bshape,
             dtype=self.dtype,
+            row_sizes=self.row_sizes,
+            col_sizes=self.col_sizes,
             symmetry=self.symmetry,
         )
 
@@ -652,7 +804,7 @@ class BCSR(BSparse):
         for row in rows:
             rowptr[row + 1] += 1
         rowptr = np.cumsum(rowptr)
-        return cls(rowptr, cols, data, bshape, symmetry=symmetry)
+        return cls(rowptr, cols, data, bshape, arr.dtype, sizes, symmetry)
 
     @classmethod
     def from_spmatrix(
@@ -687,4 +839,4 @@ class BCSR(BSparse):
         for row in rows:
             rowptr[row + 1] += 1
         rowptr = np.cumsum(rowptr)
-        return cls(rowptr, cols, data, bshape, symmetry=symmetry)
+        return cls(rowptr, cols, data, bshape, mat.dtype, sizes, symmetry)

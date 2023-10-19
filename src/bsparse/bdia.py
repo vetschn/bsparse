@@ -1,4 +1,4 @@
-from numbers import Integral
+from numbers import Integral, Number
 from warnings import warn
 
 import numpy as np
@@ -32,6 +32,9 @@ class BDIA(BSparse):
     dtype : dtype, optional
         The data type of the matrix. If not given, it is inferred from
         the data.
+    sizes : tuple[array_like, array_like], optional
+        The sizes of the row and column elements. If not given, they
+        are inferred from the data.
     symmetry : str, optional
         The symmetry of the matrix. If not given, no symmetry is
         assumed. This is only applicable for square matrices, where
@@ -47,6 +50,7 @@ class BDIA(BSparse):
         data: ArrayLike,
         bshape: tuple[int, int] | None = None,
         dtype: np.dtype | None = None,
+        sizes: tuple[ArrayLike, ArrayLike] | None = None,
         symmetry: str | None = None,
     ) -> None:
         """Initializes a ``BDIA`` matrix."""
@@ -66,8 +70,12 @@ class BDIA(BSparse):
         self._symmetry = self._validate_symmetry(symmetry)
         self._sort_diagonals()
 
-        self._row_sizes = self.row_sizes
-        self._col_sizes = self.col_sizes
+        if sizes is not None:
+            self._row_sizes = np.asarray(sizes[0], dtype=int)
+            self._col_sizes = np.asarray(sizes[1], dtype=int)
+        else:
+            self._row_sizes = self.row_sizes
+            self._col_sizes = self.col_sizes
 
     def _validate_data(self, data: ArrayLike) -> list:
         """Validates the data blocks of the matrix."""
@@ -144,6 +152,39 @@ class BDIA(BSparse):
             mask = self.offsets >= 0
             self.offsets = self.offsets[mask]
             self.data = [bdiag for bdiag, m in zip(self.data, mask) if m]
+
+
+    def _desymmetrize(self) -> "BDIA":
+        """Remove symmetry from the matrix."""
+        if self.symmetry is None:
+            return self
+
+        mask = self.offsets > 0
+        if not np.any(mask):
+            return BDIA(
+                self.offsets.copy(),
+                self.data.copy(),
+                self.bshape,
+                self.dtype,
+                (self.row_sizes, self.col_sizes),
+                None,
+            )
+        lower_offsets = -self.offsets[mask]
+        lower_data = [
+            [b.T for b in bdiag]
+            for bdiag in [self.data[i] for i, m in enumerate(mask) if m]
+        ]
+        if self.symmetry == "hermitian":
+            lower_data = [[b.conjugate() for b in bdiag] for bdiag in lower_data]
+
+        return BDIA(
+            np.concatenate((self.offsets, lower_offsets)),
+            self.data + lower_data,
+            self.bshape,
+            self.dtype,
+            (self.row_sizes, self.col_sizes),
+            None,
+        )
 
     def _sort_diagonals(self) -> None:
         """Sort the diagonals by offset."""
@@ -287,41 +328,311 @@ class BDIA(BSparse):
         self.data = self._validate_data(self.data + [bdiag])
         self._sort_diagonals()
 
-    def __add__(self, other: "np.number | BSparse") -> "BDIA":
+    def __add__(
+        self, other: Number | BSparse | np.ndarray | sp.spmatrix
+    ) -> "BDIA | np.ndarray":
         """Adds another matrix or a scalar to this matrix."""
-        ...
+        if isinstance(other, Number):
+            if other == 0:
+                return self.copy()
+            raise NotImplementedError
+        if isinstance(other, np.ndarray):
+            return self.toarray() + other
+        if isinstance(other, BSparse):
+            other = other.todia()
+        if isinstance(other, sp.spmatrix):
+            other = BDIA.from_spmatrix(other, (self.row_sizes, self.col_sizes))
 
-    def __sub__(self, other: "np.number | BSparse") -> "BDIA":
+        if not isinstance(other, BDIA):
+            raise TypeError("Invalid type.")
+
+        if self.bshape != other.bshape:
+            raise ValueError("Incompatible matrix shapes.")
+        if np.any(self.row_sizes != other.row_sizes) or np.any(
+            self.col_sizes != other.col_sizes
+        ):
+            raise ValueError("Incompatible block sizes.")
+
+        if self.symmetry != other.symmetry:
+            return self._desymmetrize() + other._desymmetrize()
+
+        offsets = np.unique(np.concatenate((self.offsets, other.offsets)))
+        data = []
+        for offset in offsets:
+            self_ind = np.nonzero(self.offsets == offset)[0]
+            other_ind = np.nonzero(other.offsets == offset)[0]
+            if self_ind.size == 0:
+                data.append(other.data[other_ind[0]])
+                continue
+            if other_ind.size == 0:
+                data.append(self.data[self_ind[0]])
+                continue
+            data.append(
+                [
+                    a + b
+                    for a, b in zip(self.data[self_ind[0]], other.data[other_ind[0]])
+                ]
+            )
+
+        return BDIA(
+            offsets,
+            data,
+            self.bshape,
+            self.dtype,
+            (self.row_sizes, self.col_sizes),
+            self.symmetry,
+        )
+
+    def __radd__(
+        self, other: Number | BSparse | np.ndarray | sp.spmatrix
+    ) -> "BDIA | np.ndarray":
+        """Adds this matrix to another matrix or a scalar."""
+        return self + other
+
+    def __sub__(
+        self, other: Number | BSparse | np.ndarray | sp.spmatrix
+    ) -> "BDIA | np.ndarray":
         """Subtracts another matrix or a scalar from this matrix."""
-        ...
+        return self + (-other)
 
-    def __rsub__(self, other: "np.number | BSparse") -> "BDIA":
+    def __rsub__(
+        self, other: Number | BSparse | np.ndarray | sp.spmatrix
+    ) -> "BDIA | np.ndarray":
         """Subtracts this matrix from another matrix or a scalar."""
-        ...
+        return (-self) + other
 
-    def __mul__(self, other: "np.number | BSparse") -> "BDIA":
+    def __mul__(
+        self, other: Number | BSparse | np.ndarray | sp.spmatrix
+    ) -> "BDIA | np.ndarray":
         """Multiplies another matrix or a scalar by this matrix."""
-        ...
+        if isinstance(other, Number):
+            if self.symmetry == "hermitian" and np.iscomplexobj(other):
+                self = self._desymmetrize()
+            result = BDIA(
+                self.offsets.copy(),
+                [[b * other for b in bdiag] for bdiag in self.data],
+                self.bshape,
+                np.result_type(self, other),
+                (self.row_sizes, self.col_sizes),
+                self.symmetry,
+            )
+            return result
 
-    def __truediv__(self, other: "np.number | BSparse") -> "BDIA":
+        if isinstance(other, np.ndarray):
+            return self.toarray() * other
+        if isinstance(other, BSparse):
+            other = other.todia()
+        if isinstance(other, sp.spmatrix):
+            other = BDIA.from_spmatrix(other, (self.row_sizes, self.col_sizes))
+
+        if not isinstance(other, BDIA):
+            raise TypeError("Invalid type.")
+
+        if self.bshape != other.bshape:
+            raise ValueError("Incompatible matrix shapes.")
+        if np.any(self.row_sizes != other.row_sizes) or np.any(
+            self.col_sizes != other.col_sizes
+        ):
+            raise ValueError("Incompatible block sizes.")
+
+        if self.symmetry != other.symmetry:
+            return self._desymmetrize() * other._desymmetrize()
+
+        offsets = np.intersect1d(self.offsets, other.offsets)
+        data = []
+        for offset in offsets:
+            self_ind = np.nonzero(self.offsets == offset)[0]
+            other_ind = np.nonzero(other.offsets == offset)[0]
+            data.append(
+                [
+                    a * b
+                    for a, b in zip(self.data[self_ind[0]], other.data[other_ind[0]])
+                ]
+            )
+
+        return BDIA(
+            offsets,
+            data,
+            self.bshape,
+            np.result_type(self, other),
+            (self.row_sizes, self.col_sizes),
+            self.symmetry,
+        )
+
+    def __rmul__(
+        self, other: Number | BSparse | np.ndarray | sp.spmatrix
+    ) -> "BDIA | np.ndarray":
+        """Multiplies this matrix by another matrix or a scalar."""
+        return self * other
+
+    def __truediv__(
+        self, other: Number | BSparse | np.ndarray | sp.spmatrix
+    ) -> "BDIA | np.ndarray":
         """Divides this matrix by another matrix or a scalar."""
-        ...
+        if isinstance(other, Number):
+            if self.symmetry == "hermitian" and np.iscomplexobj(other):
+                self = self._desymmetrize()
+            result = BDIA(
+                self.offsets.copy(),
+                [[b / other for b in bdiag] for bdiag in self.data],
+                self.bshape,
+                np.result_type(self, other),
+                (self.row_sizes, self.col_sizes),
+                self.symmetry,
+            )
+            return result
+        if isinstance(other, (BSparse, sp.spmatrix)):
+            other = other.toarray()
 
-    def __rtruediv__(self, other: "np.number | BSparse") -> "BDIA":
+        if not isinstance(other, np.ndarray):
+            raise TypeError("Invalid type.")
+
+        return self.toarray() / other
+
+    def __rtruediv__(
+        self, other: Number | BSparse | np.ndarray | sp.spmatrix
+    ) -> "BDIA | np.ndarray":
         """Divides another matrix or a scalar by this matrix."""
-        ...
+        if isinstance(other, Number):
+            return other / self.toarray()
+        if isinstance(other, (BSparse, sp.spmatrix)):
+            other = other.toarray()
+
+        if not isinstance(other, np.ndarray):
+            raise TypeError("Invalid type.")
+
+        return other / self.toarray()
 
     def __neg__(self) -> "BDIA":
         """Negates this matrix."""
-        ...
+        return BDIA(
+            self.offsets.copy(),
+            [[-b for b in bdiag] for bdiag in self.data],
+            self.bshape,
+            self.dtype,
+            (self.row_sizes, self.col_sizes),
+            self.symmetry,
+        )
 
-    def __matmul__(self, other: "BSparse") -> "BDIA":
+    @staticmethod
+    def _resolve_shifts(i: int, j: int) -> tuple[int, int, int]:
+        """Resolves the shifts for matrix multiplication."""
+        self_shift = 0
+        other_shift = 0
+        data_shift = 0
+        if i >= 0 and j >= 0:
+            other_shift = i
+        elif i < 0 and j < 0:
+            self_shift = -j
+        elif i + j >= 0:
+            if i >= 0:
+                other_shift = i + j
+            else:
+                data_shift = -i
+        else:
+            if i >= 0:
+                self_shift = -(i + j)
+            else:
+                data_shift = j
+
+        return self_shift, other_shift, data_shift
+
+    def __matmul__(
+        self, other: Number | BSparse | np.ndarray | sp.spmatrix
+    ) -> "BDIA | np.ndarray":
         """Multiplies this matrix by another matrix."""
-        ...
+        if isinstance(other, np.ndarray):
+            return self.toarray() @ other
+        if isinstance(other, BSparse):
+            other = other.todia()
+        if isinstance(other, sp.spmatrix):
+            warn(
+                "Automatically inferring block sizes from sparse matrix. "
+                "This may result in unexpected behavior. Consider "
+                "converting to a `BSparse` matrix."
+            )
+            other = BDIA.from_spmatrix(other, (self.col_sizes, [1] * other.shape[1]))
 
-    def __rmatmul__(self, other: "BSparse") -> "BDIA":
+        if not isinstance(other, BDIA):
+            raise TypeError("Invalid type.")
+
+        if self.bshape[1] != other.bshape[0]:
+            raise ValueError("Incompatible matrix shapes.")
+        if np.any(self.col_sizes != other.row_sizes):
+            raise ValueError("Incompatible block sizes.")
+
+        if self.symmetry is not None or other.symmetry is not None:
+            return self._desymmetrize() @ other._desymmetrize()
+
+        offsets = sorted(
+            set(
+                i + j
+                for i in self.offsets
+                for j in other.offsets
+                if -self.bshape[0] < i + j < other.bshape[1]
+            )
+        )
+
+        data = []
+        for offset in offsets:
+            bdiag = []
+            for i in range(
+                min(
+                    self.bshape[0] + offset,
+                    other.bshape[1] - offset,
+                    self.bshape[0],
+                    other.bshape[1],
+                )
+            ):
+                row_ind = i - offset if offset < 0 else i
+                col_ind = i if offset < 0 else i + offset
+                bdiag.append(
+                    sparse.zeros(
+                        (self.row_sizes[row_ind], other.col_sizes[col_ind]),
+                        self.dtype,
+                    )
+                )
+            data.append(bdiag)
+
+        for i in self.offsets:
+            self_ind = np.nonzero(self.offsets == i)[0][0]
+            for j in other.offsets:
+                other_ind = np.nonzero(other.offsets == j)[0][0]
+                if i + j not in offsets:
+                    continue
+                self_shift, other_shift, data_shift = self._resolve_shifts(i, j)
+
+                self_bdiag = self.data[self_ind][self_shift:]
+                other_bdiag = other.data[other_ind][other_shift:]
+                for k, (a, b) in enumerate(zip(self_bdiag, other_bdiag)):
+                    data[offsets.index(i + j)][k + data_shift] += a @ b
+
+        return BDIA(
+            np.array(offsets, dtype=int),
+            data,
+            (self.bshape[0], other.bshape[1]),
+            np.result_type(self, other),
+            (self.row_sizes, other.col_sizes),
+            None,
+        )
+
+    def __rmatmul__(
+        self, other: Number | BSparse | np.ndarray | sp.spmatrix
+    ) -> "BDIA | np.ndarray":
         """Multiplies another matrix by this matrix."""
-        ...
+        if isinstance(other, np.ndarray):
+            return other @ self.toarray()
+        if isinstance(other, BSparse):
+            return other.todia() @ self
+        if isinstance(other, sp.spmatrix):
+            warn(
+                "Automatically inferring block sizes from sparse matrix. "
+                "This may result in unexpected behavior. Consider "
+                "converting to a `BSparse` matrix."
+            )
+            return (
+                BDIA.from_spmatrix(other, ([1] * other.shape[0], self.row_sizes)) @ self
+            )
 
     @property
     def bshape(self) -> tuple[int, int]:
@@ -408,6 +719,7 @@ class BDIA(BSparse):
             data,
             (self.bshape[1], self.bshape[0]),
             self.dtype,
+            (self.col_sizes, self.row_sizes),
             self.symmetry,
         )
         return transpose
@@ -429,6 +741,7 @@ class BDIA(BSparse):
             [[b.conjugate() for b in bdiag] for bdiag in self.data],
             self.bshape,
             self.dtype,
+            (self.row_sizes, self.col_sizes),
             self.symmetry,
         )
         return conjugate
@@ -463,6 +776,7 @@ class BDIA(BSparse):
             self.data.copy(),
             self.bshape,
             self.dtype,
+            (self.row_sizes, self.col_sizes),
             self.symmetry,
         )
         return new
@@ -474,6 +788,7 @@ class BDIA(BSparse):
             self.data.copy(),
             self.bshape,
             dtype,
+            (self.row_sizes, self.col_sizes),
             self.symmetry,
         )
         return new
@@ -543,7 +858,15 @@ class BDIA(BSparse):
         cols = np.concatenate(cols)
         data = [b for bdiag in data for b in bdiag]
 
-        return BCOO(rows, cols, data, self.bshape, self.dtype, self.symmetry)
+        return BCOO(
+            rows,
+            cols,
+            data,
+            self.bshape,
+            self.dtype,
+            (self.row_sizes, self.col_sizes),
+            self.symmetry,
+        )
 
     def tocsr(self) -> "BSparse":
         """Returns a Compressed Sparse Row representation of the matrix."""
@@ -562,6 +885,8 @@ class BDIA(BSparse):
             data=self.data,
             bshape=self.bshape,
             dtype=self.dtype,
+            row_sizes=self.row_sizes,
+            col_sizes=self.col_sizes,
             symmetry=self.symmetry,
         )
 
