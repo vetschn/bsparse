@@ -306,12 +306,18 @@ class COO(Sparse):
             raise ValueError("Incompatible matrix shapes.")
 
         if self.symmetry == other.symmetry:
+            if self.nnz == 0:
+                return other.copy()
+            if other.nnz == 0:
+                return self.copy()
+
             rows = np.concatenate((self.rows, other.rows))
             cols = np.concatenate((self.cols, other.cols))
             data = np.concatenate((self.data, other.data))
             coords, inverse = np.unique(
                 list(zip(rows, cols)), axis=0, return_inverse=True
             )
+
             data = np.bincount(inverse, weights=data)
             ind = np.nonzero(data)
             result = COO(
@@ -374,6 +380,13 @@ class COO(Sparse):
             raise ValueError("Incompatible matrix shapes.")
 
         if self.symmetry == other.symmetry:
+            if self.nnz == 0 or other.nnz == 0:
+                return sparse.zeros(
+                    self.shape,
+                    np.result_type(self.dtype, other.dtype),
+                    self.symmetry,
+                    format="coo",
+                )
             common = set(zip(self.rows, self.cols)) & set(zip(other.rows, other.cols))
             self_mask = [coord in common for coord in zip(self.rows, self.cols)]
             other_mask = [coord in common for coord in zip(other.rows, other.cols)]
@@ -466,6 +479,14 @@ class COO(Sparse):
         if self.symmetry is not None or other.symmetry is not None:
             # Products of symmetric matrices are not necessarily symmetric.
             return self._desymmetrize() @ other._desymmetrize()
+        
+        if self.nnz == 0 or other.nnz == 0:
+            return sparse.zeros(
+                (self.shape[0], other.shape[1]),
+                np.result_type(self.dtype, other.dtype),
+                self.symmetry,
+                format="coo",
+            )
 
         rows, cols, data = [], [], []
         for a_row, a_col, a in zip(self.rows, self.cols, self.data):
