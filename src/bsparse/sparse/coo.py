@@ -479,7 +479,7 @@ class COO(Sparse):
         if self.symmetry is not None or other.symmetry is not None:
             # Products of symmetric matrices are not necessarily symmetric.
             return self._desymmetrize() @ other._desymmetrize()
-        
+
         if self.nnz == 0 or other.nnz == 0:
             return sparse.zeros(
                 (self.shape[0], other.shape[1]),
