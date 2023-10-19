@@ -513,6 +513,29 @@ class BDIA(BSparse):
             self.symmetry,
         )
 
+    @staticmethod
+    def _resolve_shifts(i: int, j: int) -> tuple[int, int, int]:
+        """Resolves the shifts for matrix multiplication."""
+        self_shift = 0
+        other_shift = 0
+        data_shift = 0
+        if i >= 0 and j >= 0:
+            other_shift = i
+        elif i < 0 and j < 0:
+            self_shift = -j
+        elif i + j >= 0:
+            if i >= 0:
+                other_shift = i + j
+            else:
+                data_shift = -i
+        else:
+            if i >= 0:
+                self_shift = -(i + j)
+            else:
+                data_shift = j
+
+        return self_shift, other_shift, data_shift
+
     def __matmul__(
         self, other: Number | BSparse | np.ndarray | sp.spmatrix
     ) -> "BDIA | np.ndarray":
@@ -560,51 +583,27 @@ class BDIA(BSparse):
                     other.bshape[1],
                 )
             ):
-                if offset < 0:
-                    bdiag.append(
-                        sparse.zeros(
-                            (self.row_sizes[i - offset], other.col_sizes[i]), self.dtype
-                        )
+                row_ind = i - offset if offset < 0 else i
+                col_ind = i if offset < 0 else i + offset
+                bdiag.append(
+                    sparse.zeros(
+                        (self.row_sizes[row_ind], other.col_sizes[col_ind]),
+                        self.dtype,
                     )
-                else:
-                    bdiag.append(
-                        sparse.zeros(
-                            (self.row_sizes[i], other.col_sizes[i + offset]), self.dtype
-                        )
-                    )
+                )
             data.append(bdiag)
 
-        # NOTE: This works but is pretty tough on the eyes.
         for i in self.offsets:
             self_ind = np.nonzero(self.offsets == i)[0][0]
             for j in other.offsets:
                 other_ind = np.nonzero(other.offsets == j)[0][0]
                 if i + j not in offsets:
                     continue
-                data_shift = 0
-                self_shift = 0
-                other_shift = 0
-                if i >= 0 and j >= 0:
-                    other_shift = i
-                elif i < 0 and j < 0:
-                    self_shift = -j
-                elif i + j >= 0:
-                    if i >= 0:
-                        other_shift = i + j
-                    else:
-                        data_shift = -i
-                else:
-                    if i >= 0:
-                        self_shift = -(i + j)
-                    else:
-                        data_shift = j
+                self_shift, other_shift, data_shift = self._resolve_shifts(i, j)
 
-                for k, (a, b) in enumerate(
-                    zip(
-                        self.data[self_ind][self_shift:],
-                        other.data[other_ind][other_shift:],
-                    )
-                ):
+                self_bdiag = self.data[self_ind][self_shift:]
+                other_bdiag = other.data[other_ind][other_shift:]
+                for k, (a, b) in enumerate(zip(self_bdiag, other_bdiag)):
                     data[offsets.index(i + j)][k + data_shift] += a @ b
 
         return BDIA(
