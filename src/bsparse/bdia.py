@@ -153,6 +153,7 @@ class BDIA(BSparse):
             self.offsets = self.offsets[mask]
             self.data = [bdiag for bdiag, m in zip(self.data, mask) if m]
 
+
     def _desymmetrize(self) -> "BDIA":
         """Remove symmetry from the matrix."""
         if self.symmetry is None:
