@@ -314,7 +314,7 @@ class BCOO(BSparse):
         if not isinstance(key, tuple) or len(key) != 2:
             raise IndexError("Invalid index.")
 
-        if not isinstance(value, (np.ndarray, sparse.Sparse, BSparse)):
+        if not isinstance(value, (np.ndarray, sparse.Sparse, sp.spmatrix)):
             raise ValueError("Invalid value.")
 
         value = value.astype(self.dtype)
@@ -350,7 +350,9 @@ class BCOO(BSparse):
                 self._col_sizes[col] = value.shape[1]
                 return
             ind = np.nonzero(mask)[0][0]
-            self.data[ind] = value
+            self.data = self._validate_data(
+                self.data[:ind] + [value] + self.data[ind + 1 :]
+            )
             self._row_sizes[row] = value.shape[0]
             self._col_sizes[col] = value.shape[1]
             return
