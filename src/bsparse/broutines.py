@@ -2,8 +2,9 @@ import random as rnd
 from pathlib import Path
 
 import numpy as np
+import scipy.sparse as sp
 
-from bsparse import BCOO, BCSR, BDIA
+from bsparse import BCOO, BCSR, BDIA, sparse
 from bsparse.bsparse import BSparse
 
 
@@ -90,9 +91,65 @@ def eye(
     raise ValueError(f"Unknown bsparse format {format}")
 
 
+def _diag_overlap(
+    values: list,
+    overlap: int,
+    format: str = "bcoo",
+) -> BSparse:
+    """Creates a sparse diagonal matrix with overlap."""
+
+    out_dtype = np.result_type(*values)
+    total_overlap = (len(values) - 1) * overlap
+    shapes = np.array([b.shape for b in values])
+    out_shape = tuple(np.sum(shapes, axis=0) - total_overlap)
+
+    out_rows = []
+    out_cols = []
+    out_data = []
+
+    row_offsets = [0]
+    col_offsets = [0]
+    rr = 0
+    cc = 0
+
+    for shape, b in zip(shapes, values):
+        if isinstance(b, (sp.spmatrix, sparse.Sparse)):
+            b = b.toarray()
+
+        rows, cols = b.nonzero()
+        out_rows.extend(rows + rr)
+        out_cols.extend(cols + cc)
+        out_data.extend(b[rows, cols])
+
+        rr += shape[0] - overlap
+        cc += shape[1] - overlap
+        row_offsets.append(rr)
+        col_offsets.append(cc)
+
+    row_offsets = row_offsets + [out_shape[0]]
+    col_offsets = col_offsets + [out_shape[1]]
+
+    # SciPy's COO matrix allows duplicate entries and sums them quite
+    # efficiently. We use this to our advantage to create the sparse
+    # matrix.
+    out = sp.coo_array(
+        (out_data, (out_rows, out_cols)), shape=out_shape, dtype=out_dtype
+    )
+    bsparse = BCOO.from_spmatrix(out, (np.diff(row_offsets), np.diff(col_offsets)))
+
+    if format == "bcoo":
+        return bsparse
+    if format == "bcsr":
+        return bsparse.tocsr()
+    if format == "bdia":
+        return bsparse.todia()
+    raise ValueError(f"Unknown bsparse format {format}")
+
+
 def diag(
     values: list,
     offset: int = 0,
+    overlap: int = 0,
     bshape: tuple[int, int] | None = None,
     dtype: np.dtype | None = None,
     format: str = "bcoo",
@@ -105,6 +162,10 @@ def diag(
         The values of the diagonal.
     offset : int, optional
         The offset of the diagonal, by default 0.
+    overlap : int, optional
+        The overlap of the diagonal blocks, by default 0. If overlap >
+        0, the diagonal blocks overlap additively by the specified
+        amount. The l
     bshape : tuple[int, int], optional
         The bshape of the matrix, by default None.
     dtype : np.dtype, optional
@@ -118,6 +179,15 @@ def diag(
         A sparse diagonal matrix of specified values and offset.
 
     """
+    if overlap > 0:
+        if bshape is not None:
+            raise ValueError("Cannot specify bshape with overlap.")
+        if offset != 0:
+            raise ValueError(
+                "Cannot specify offset with overlap. (Diagonal offset only)."
+            )
+        return _diag_overlap(values, overlap, format)
+
     if bshape is None:
         bshape = (len(values) + abs(offset), len(values) + abs(offset))
 
