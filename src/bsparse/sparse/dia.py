@@ -661,7 +661,7 @@ class DIA(Sparse):
 
     @classmethod
     def from_sparray(cls, mat: sp.sparray, symmetry: str | None = None) -> "DIA":
-        """Creates a sparse matrix from a `scipy.sparse.spmatrix`."""
+        """Creates a sparse matrix from a `scipy.sparse.sparray`."""
         from bsparse.sparse.coo import COO
 
         mat = COO.from_sparray(mat, symmetry=symmetry)

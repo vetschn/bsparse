@@ -949,7 +949,7 @@ class BCOO(BSparse):
         sizes: tuple[ArrayLike, ArrayLike],
         symmetry: str | None = None,
     ) -> "BCOO":
-        """Creates a `BCOO` matrix from a `scipy.sparse.spmatrix`."""
+        """Creates a `BCOO` matrix from a `scipy.sparse.sparray`."""
         mat = sp.lil_array(mat)
         row_sizes, col_sizes = sizes
         if mat.shape != (np.sum(row_sizes), np.sum(col_sizes)):

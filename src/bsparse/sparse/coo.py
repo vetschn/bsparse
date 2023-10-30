@@ -717,6 +717,6 @@ class COO(Sparse):
 
     @classmethod
     def from_sparray(cls, mat: sp.sparray, symmetry: str | None = None) -> "COO":
-        """Creates a sparse matrix from a `scipy.sparse.spmatrix`."""
+        """Creates a sparse matrix from a `scipy.sparse.sparray`."""
         mat = sp.coo_array(mat)
         return cls(mat.row, mat.col, mat.data, mat.shape, symmetry=symmetry)

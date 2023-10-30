@@ -909,7 +909,7 @@ class BDIA(BSparse):
         sizes: tuple[ArrayLike, ArrayLike],
         symmetry: str | None = None,
     ) -> "BDIA":
-        """Creates a `BDIA` matrix from a `scipy.sparse.spmatrix`."""
+        """Creates a `BDIA` matrix from a `scipy.sparse.sparray`."""
         from bsparse import BCOO
 
         bcoo = BCOO.from_sparray(mat, sizes, symmetry=symmetry)

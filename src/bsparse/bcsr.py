@@ -815,7 +815,7 @@ class BCSR(BSparse):
         sizes: tuple[ArrayLike, ArrayLike],
         symmetry: str | None = None,
     ) -> "BCSR":
-        """Creates a sparse matrix from a `scipy.sparse.spmatrix`."""
+        """Creates a sparse matrix from a `scipy.sparse.sparray`."""
         mat = sp.lil_array(mat)
         row_sizes, col_sizes = sizes
         if mat.shape != (np.sum(row_sizes), np.sum(col_sizes)):

@@ -650,6 +650,6 @@ class CSR(Sparse):
 
     @classmethod
     def from_sparray(cls, mat: sp.sparray, symmetry: str | None = None) -> "CSR":
-        """Creates a sparse matrix from a `scipy.sparse.spmatrix`."""
+        """Creates a sparse matrix from a `scipy.sparse.sparray`."""
         mat = sp.csr_array(mat)
         return cls(mat.indptr, mat.indices, mat.data, mat.shape, symmetry=symmetry)

@@ -82,7 +82,7 @@ def test_from_array(
         pytest.param(DIA, id="DIA"),
     ],
 )
-def test_from_spmatrix(sparse_type: Sparse, shape: tuple[int, int], symmetry: str):
+def test_from_sparray(sparse_type: Sparse, shape: tuple[int, int], symmetry: str):
     spmat = sp.random(*shape, 0.1) + 1j * sp.random(*shape, 0.1)
     if symmetry is not None and shape[0] != shape[1]:
         with pytest.raises(ValueError):

@@ -187,5 +187,5 @@ class Sparse(ABC):
     @classmethod
     @abstractmethod
     def from_sparray(cls, mat: sp.sparray, symmetry: str | None) -> "Sparse":
-        """Creates a sparse matrix from a `scipy.sparse.spmatrix`."""
+        """Creates a sparse matrix from a `scipy.sparse.sparray`."""
         ...

@@ -85,7 +85,7 @@ def test_from_array(
         pytest.param(BDIA, id="BDIA"),
     ],
 )
-def test_from_spmatrix(
+def test_from_sparray(
     bsparse_type: BSparse, sizes: tuple[ArrayLike, ArrayLike], symmetry: str
 ):
     shape = (sizes[0].sum(), sizes[1].sum())
