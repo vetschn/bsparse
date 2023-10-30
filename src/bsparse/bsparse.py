@@ -81,6 +81,6 @@ class BSparse(Sparse):
 
     @classmethod
     @abstractmethod
-    def from_spmatrix(cls, mat: sp.spmatrix, sizes: tuple[list, list]) -> "BSparse":
-        """Creates a sparse matrix from a `scipy.sparse.spmatrix`."""
+    def from_sparray(cls, mat: sp.sparray, sizes: tuple[list, list]) -> "BSparse":
+        """Creates a sparse matrix from a `scipy.sparse.sparray`."""
         ...

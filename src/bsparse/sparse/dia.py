@@ -237,7 +237,7 @@ class DIA(Sparse):
         self.data = np.vstack((self.data, data))
 
     def __add__(
-        self, other: Number | Sparse | np.ndarray | sp.spmatrix
+        self, other: Number | Sparse | np.ndarray | sp.sparray
     ) -> "DIA | np.ndarray":
         """Adds another matrix or a scalar to this matrix."""
         if isinstance(other, Number):
@@ -248,8 +248,8 @@ class DIA(Sparse):
             return self.toarray() + other
         if isinstance(other, Sparse):
             other = other.todia()
-        if isinstance(other, sp.spmatrix):
-            other = DIA.from_spmatrix(other)
+        if sp.issparse(other):
+            other = DIA.from_sparray(other)
 
         if not isinstance(other, DIA):
             raise TypeError("Invalid type.")
@@ -275,25 +275,25 @@ class DIA(Sparse):
         )
 
     def __radd__(
-        self, other: Number | Sparse | np.ndarray | sp.spmatrix
+        self, other: Number | Sparse | np.ndarray | sp.sparray
     ) -> "DIA | np.ndarray":
         """Adds this matrix to another matrix or a scalar."""
         return self + other
 
     def __sub__(
-        self, other: Number | Sparse | np.ndarray | sp.spmatrix
+        self, other: Number | Sparse | np.ndarray | sp.sparray
     ) -> "DIA | np.ndarray":
         """Subtracts another matrix or a scalar from this matrix."""
         return self + (-other)
 
     def __rsub__(
-        self, other: Number | Sparse | np.ndarray | sp.spmatrix
+        self, other: Number | Sparse | np.ndarray | sp.sparray
     ) -> "DIA | np.ndarray":
         """Subtracts this matrix from another matrix or a scalar."""
         return (-self) + other
 
     def __mul__(
-        self, other: Number | Sparse | np.ndarray | sp.spmatrix
+        self, other: Number | Sparse | np.ndarray | sp.sparray
     ) -> "DIA | np.ndarray":
         """Multiplies another matrix or a scalar by this matrix."""
         if isinstance(other, Number):
@@ -311,8 +311,8 @@ class DIA(Sparse):
             return self.toarray() * other
         if isinstance(other, Sparse):
             other = other.todia()
-        if isinstance(other, sp.spmatrix):
-            other = DIA.from_spmatrix(other)
+        if sp.issparse(other):
+            other = DIA.from_sparray(other)
 
         if not isinstance(other, DIA):
             raise TypeError("Invalid type.")
@@ -337,13 +337,13 @@ class DIA(Sparse):
         )
 
     def __rmul__(
-        self, other: Number | Sparse | np.ndarray | sp.spmatrix
+        self, other: Number | Sparse | np.ndarray | sp.sparray
     ) -> "DIA | np.ndarray":
         """Multiplies this matrix by another matrix or a scalar."""
         return self * other
 
     def __truediv__(
-        self, other: Number | Sparse | np.ndarray | sp.spmatrix
+        self, other: Number | Sparse | np.ndarray | sp.sparray
     ) -> "DIA | np.ndarray":
         """Divides this matrix by another matrix or a scalar."""
         if isinstance(other, Number):
@@ -357,7 +357,7 @@ class DIA(Sparse):
                 self.symmetry,
             )
             return result
-        if isinstance(other, (Sparse, sp.spmatrix)):
+        if isinstance(other, Sparse) or sp.issparse(other):
             other = other.toarray()
 
         if not isinstance(other, np.ndarray):
@@ -366,12 +366,12 @@ class DIA(Sparse):
         return self.toarray() / other
 
     def __rtruediv__(
-        self, other: Number | Sparse | np.ndarray | sp.spmatrix
+        self, other: Number | Sparse | np.ndarray | sp.sparray
     ) -> "DIA | np.ndarray":
         """Divides another matrix or a scalar by this matrix."""
         if isinstance(other, Number):
             return other / self.toarray()
-        if isinstance(other, (Sparse, sp.spmatrix)):
+        if isinstance(other, Sparse) or sp.issparse(other):
             other = other.toarray()
 
         if not isinstance(other, np.ndarray):
@@ -391,15 +391,15 @@ class DIA(Sparse):
         return result
 
     def __matmul__(
-        self, other: Number | Sparse | np.ndarray | sp.spmatrix
+        self, other: Number | Sparse | np.ndarray | sp.sparray
     ) -> "DIA | np.ndarray":
         """Multiplies this matrix by another matrix."""
         if isinstance(other, np.ndarray):
             return self.toarray() @ other
         if isinstance(other, Sparse):
             other = other.todia()
-        if isinstance(other, sp.spmatrix):
-            other = DIA.from_spmatrix(other)
+        if sp.issparse(other):
+            other = DIA.from_sparray(other)
 
         if not isinstance(other, DIA):
             raise TypeError("Invalid type.")
@@ -451,15 +451,15 @@ class DIA(Sparse):
         )
 
     def __rmatmul__(
-        self, other: Number | Sparse | np.ndarray | sp.spmatrix
+        self, other: Number | Sparse | np.ndarray | sp.sparray
     ) -> "DIA | np.ndarray":
         """Multiplies another matrix by this matrix."""
         if isinstance(other, np.ndarray):
             return other @ self.toarray()
         if isinstance(other, Sparse):
             return other.todia() @ self
-        if isinstance(other, sp.spmatrix):
-            return DIA.from_spmatrix(other) @ self
+        if sp.issparse(other):
+            return DIA.from_sparray(other) @ self
 
     @property
     def shape(self) -> tuple[int, int]:
@@ -660,9 +660,9 @@ class DIA(Sparse):
         return cls(offsets, data, arr.shape, symmetry=symmetry)
 
     @classmethod
-    def from_spmatrix(cls, mat: sp.spmatrix, symmetry: str | None = None) -> "DIA":
-        """Creates a sparse matrix from a `scipy.sparse.spmatrix`."""
+    def from_sparray(cls, mat: sp.sparray, symmetry: str | None = None) -> "DIA":
+        """Creates a sparse matrix from a `scipy.sparse.sparray`."""
         from bsparse.sparse.coo import COO
 
-        mat = COO.from_spmatrix(mat, symmetry=symmetry)
+        mat = COO.from_sparray(mat, symmetry=symmetry)
         return mat.todia()

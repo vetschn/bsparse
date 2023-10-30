@@ -42,7 +42,7 @@ What bsparse is:
   - ... conversion routines (between extending classes and to dense
     arrays)
   - ... instantiation routines (from `numpy.ndarray`, from
-    `scipy.sparse.spmatrix`, ``eye``, ``diag`` (with a clever overlap
+    `scipy.sparse.sparray`, ``eye``, ``diag`` (with a clever overlap
     functionality!), ``random`` (with a density parameter))
   - ... loading and saving to disk in ``.npz`` format
 

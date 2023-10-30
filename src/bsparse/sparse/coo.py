@@ -285,7 +285,7 @@ class COO(Sparse):
         self.data = np.append(self.data, value)
 
     def __add__(
-        self, other: Number | Sparse | np.ndarray | sp.spmatrix
+        self, other: Number | Sparse | np.ndarray | sp.sparray
     ) -> "COO | np.ndarray":
         """Adds another matrix or a scalar to this matrix."""
         if isinstance(other, Number):
@@ -296,8 +296,8 @@ class COO(Sparse):
             return self.toarray() + other
         if isinstance(other, Sparse):
             other = other.tocoo()
-        if isinstance(other, sp.spmatrix):
-            other = COO.from_spmatrix(other)
+        if sp.issparse(other):
+            other = COO.from_sparray(other)
 
         if not isinstance(other, COO):
             raise TypeError("Invalid type.")
@@ -333,25 +333,25 @@ class COO(Sparse):
         return self._desymmetrize() + other._desymmetrize()
 
     def __radd__(
-        self, other: Number | Sparse | np.ndarray | sp.spmatrix
+        self, other: Number | Sparse | np.ndarray | sp.sparray
     ) -> "COO | np.ndarray":
         """Adds this matrix to another matrix or a scalar."""
         return self + other
 
     def __sub__(
-        self, other: Number | Sparse | np.ndarray | sp.spmatrix
+        self, other: Number | Sparse | np.ndarray | sp.sparray
     ) -> "COO | np.ndarray":
         """Subtracts another matrix or a scalar from this matrix."""
         return self + (-other)
 
     def __rsub__(
-        self, other: Number | Sparse | np.ndarray | sp.spmatrix
+        self, other: Number | Sparse | np.ndarray | sp.sparray
     ) -> "COO | np.ndarray":
         """Subtracts this matrix from another matrix or a scalar."""
         return other + (-self)
 
     def __mul__(
-        self, other: Number | Sparse | np.ndarray | sp.spmatrix
+        self, other: Number | Sparse | np.ndarray | sp.sparray
     ) -> "COO | np.ndarray":
         """Multiplies another matrix or a scalar by this matrix."""
         if isinstance(other, Number):
@@ -370,8 +370,8 @@ class COO(Sparse):
             return self.toarray() * other
         if isinstance(other, Sparse):
             other = other.tocoo()
-        if isinstance(other, sp.spmatrix):
-            other = COO.from_spmatrix(other)
+        if sp.issparse(other):
+            other = COO.from_sparray(other)
 
         if not isinstance(other, COO):
             raise TypeError("Invalid type.")
@@ -408,12 +408,12 @@ class COO(Sparse):
         return self._desymmetrize() * other._desymmetrize()
 
     def __rmul__(
-        self, other: Number | Sparse | np.ndarray | sp.spmatrix
+        self, other: Number | Sparse | np.ndarray | sp.sparray
     ) -> "COO | np.ndarray":
         """Multiplies this matrix by another matrix or a scalar."""
         return self * other
 
-    def __truediv__(self, other: Number | Sparse | sp.spmatrix) -> "COO | np.ndarray":
+    def __truediv__(self, other: Number | Sparse | sp.sparray) -> "COO | np.ndarray":
         """Divides this matrix by another matrix or a scalar."""
         if isinstance(other, Number):
             if self.symmetry == "hermitian" and np.iscomplexobj(other):
@@ -427,7 +427,7 @@ class COO(Sparse):
                 self.symmetry,
             )
             return result
-        if isinstance(other, (Sparse, sp.spmatrix)):
+        if isinstance(other, Sparse) or sp.issparse(other):
             other = other.toarray()
 
         if not isinstance(other, np.ndarray):
@@ -435,11 +435,11 @@ class COO(Sparse):
 
         return self.toarray() / other
 
-    def __rtruediv__(self, other: Number | Sparse | sp.spmatrix) -> "COO | np.ndarray":
+    def __rtruediv__(self, other: Number | Sparse | sp.sparray) -> "COO | np.ndarray":
         """Divides another matrix or a scalar by this matrix."""
         if isinstance(other, Number):
             return other / self.toarray()
-        if isinstance(other, (Sparse, sp.spmatrix)):
+        if isinstance(other, Sparse) or sp.issparse(other):
             other = other.toarray()
 
         if not isinstance(other, np.ndarray):
@@ -459,16 +459,14 @@ class COO(Sparse):
         )
         return result
 
-    def __matmul__(
-        self, other: Sparse | sp.spmatrix | np.ndarray
-    ) -> "COO | np.ndarray":
+    def __matmul__(self, other: Sparse | sp.sparray | np.ndarray) -> "COO | np.ndarray":
         """Multiplies this matrix by another matrix."""
         if isinstance(other, np.ndarray):
             return self.toarray() @ other
         if isinstance(other, Sparse):
             other = other.tocoo()
-        if isinstance(other, sp.spmatrix):
-            other = COO.from_spmatrix(other)
+        if sp.issparse(other):
+            other = COO.from_sparray(other)
 
         if not isinstance(other, COO):
             raise TypeError("Invalid type.")
@@ -522,8 +520,9 @@ class COO(Sparse):
             return other @ self.toarray()
         if isinstance(other, Sparse):
             return other.tocoo() @ self
-        if isinstance(other, sp.spmatrix):
-            return COO.from_spmatrix(other) @ self
+        if sp.issparse(other):
+            return COO.from_sparray(other) @ self
+        raise TypeError("Invalid type.")
 
     @property
     def shape(self) -> tuple[int, int]:
@@ -717,7 +716,7 @@ class COO(Sparse):
         return cls(rows, cols, data, arr.shape, symmetry=symmetry)
 
     @classmethod
-    def from_spmatrix(cls, mat: sp.spmatrix, symmetry: str | None = None) -> "COO":
-        """Creates a sparse matrix from a `scipy.sparse.spmatrix`."""
+    def from_sparray(cls, mat: sp.sparray, symmetry: str | None = None) -> "COO":
+        """Creates a sparse matrix from a `scipy.sparse.sparray`."""
         mat = sp.coo_array(mat)
         return cls(mat.row, mat.col, mat.data, mat.shape, symmetry=symmetry)
