@@ -20,11 +20,8 @@ classifiers = [
 ]
 keywords = ["Nano-TCAD", "Sparse Matrices", "Block Matrices"]
 dynamic = ["version"]
-requires-python = ">=3.10"
-dependencies = [
-    "numpy==1.23.5",
-    "scipy==1.10",
-]
+requires-python = ">=3.11"
+dependencies = ["numpy", "scipy"]
 
 [project.urls]
 Code = "https://github.com/vetschn/bsparse"
@@ -35,3 +32,7 @@ version = { attr = "bsparse.__about__.__version__" }
 [tool.pytest.ini_options]
 addopts = ["--import-mode=importlib"]
 testpaths = ["tests"]
+filterwarnings = [
+    "ignore::UserWarning:bsparse",
+    "ignore::RuntimeWarning",
+]
