@@ -881,7 +881,7 @@ class BDIA(BSparse):
             filename,
             format="bdia",
             offsets=self.offsets,
-            data=self.data,
+            data=np.asarray(self.data, dtype=object),
             bshape=self.bshape,
             dtype=self.dtype,
             row_sizes=self.row_sizes,
