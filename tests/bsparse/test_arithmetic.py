@@ -44,7 +44,7 @@ def test_add(
         spmat = spmat + spmat.T
     if symmetry == "hermitian":
         spmat = spmat + spmat.T.conj()
-    mat = bsparse_type.from_spmatrix(spmat, sizes=sizes, symmetry=symmetry)
+    mat = bsparse_type.from_sparray(spmat, sizes=sizes, symmetry=symmetry)
     arr = mat.toarray()
     assert np.allclose((mat + mat).toarray(), arr + arr)
     assert np.allclose((mat + arr), arr + arr)
@@ -89,7 +89,7 @@ def test_subtract(
         spmat = spmat + spmat.T
     if symmetry == "hermitian":
         spmat = spmat + spmat.T.conj()
-    mat = bsparse_type.from_spmatrix(spmat, sizes=sizes, symmetry=symmetry)
+    mat = bsparse_type.from_sparray(spmat, sizes=sizes, symmetry=symmetry)
     arr = mat.toarray()
     assert np.allclose((mat - 2 * mat).toarray(), arr - 2 * arr)
     assert np.allclose((mat - 2 * arr), arr - 2 * arr)
@@ -141,7 +141,7 @@ def test_multiply(
         spmat = spmat + spmat.T
     if symmetry == "hermitian":
         spmat = spmat + spmat.T.conj()
-    mat = bsparse_type.from_spmatrix(spmat, sizes=sizes, symmetry=symmetry)
+    mat = bsparse_type.from_sparray(spmat, sizes=sizes, symmetry=symmetry)
     arr = mat.toarray()
     assert np.allclose((mat * factor).toarray(), arr * factor)
     assert np.allclose((factor * mat).toarray(), arr * factor)
@@ -245,7 +245,7 @@ def test_matmul(
         spmat = spmat + spmat.T
     if symmetry == "hermitian":
         spmat = spmat + spmat.T.conj()
-    mat = bsparse_type.from_spmatrix(spmat, sizes=sizes, symmetry=symmetry)
+    mat = bsparse_type.from_sparray(spmat, sizes=sizes, symmetry=symmetry)
     arr = mat.toarray()
     assert np.allclose((mat @ (2 * mat.T)).toarray(), arr @ (2 * arr.T))
     assert np.allclose((mat @ (2 * arr.T)), arr @ (2 * arr.T))

@@ -86,17 +86,17 @@ def test_from_spmatrix(sparse_type: Sparse, shape: tuple[int, int], symmetry: st
     spmat = sp.random(*shape, 0.1) + 1j * sp.random(*shape, 0.1)
     if symmetry is not None and shape[0] != shape[1]:
         with pytest.raises(ValueError):
-            mat = sparse_type.from_spmatrix(spmat, symmetry=symmetry)
+            mat = sparse_type.from_sparray(spmat, symmetry=symmetry)
 
     elif symmetry is not None and shape[0] == shape[1]:
         if symmetry == "symmetric":
             spmat = spmat + spmat.T
         if symmetry == "hermitian":
             spmat = spmat + spmat.conj().T
-        mat = sparse_type.from_spmatrix(spmat, symmetry=symmetry)
+        mat = sparse_type.from_sparray(spmat, symmetry=symmetry)
         assert np.allclose(mat.toarray(), spmat.toarray())
     else:
-        mat = sparse_type.from_spmatrix(spmat, symmetry=symmetry)
+        mat = sparse_type.from_sparray(spmat, symmetry=symmetry)
         assert np.allclose(mat.toarray(), spmat.toarray())
 
 
@@ -280,7 +280,7 @@ def test_npz(sparse_type: Sparse, symmetry: str):
         spmat = spmat + spmat.T
     if symmetry == "hermitian":
         spmat = spmat + spmat.conj().T
-    mat = sparse_type.from_spmatrix(spmat, symmetry=symmetry)
+    mat = sparse_type.from_sparray(spmat, symmetry=symmetry)
 
     outfile = BytesIO()
     mat.save_npz(outfile)

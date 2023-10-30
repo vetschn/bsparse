@@ -113,7 +113,7 @@ def _diag_overlap(
     cc = 0
 
     for shape, b in zip(shapes, values):
-        if isinstance(b, (sp.spmatrix, sparse.Sparse)):
+        if isinstance(b, sparse.Sparse) or sp.issparse(b):
             b = b.toarray()
 
         rows, cols = b.nonzero()
@@ -135,7 +135,7 @@ def _diag_overlap(
     out = sp.coo_array(
         (out_data, (out_rows, out_cols)), shape=out_shape, dtype=out_dtype
     )
-    bsparse = BCOO.from_spmatrix(out, (np.diff(row_offsets), np.diff(col_offsets)))
+    bsparse = BCOO.from_sparray(out, (np.diff(row_offsets), np.diff(col_offsets)))
 
     if format == "bcoo":
         return bsparse

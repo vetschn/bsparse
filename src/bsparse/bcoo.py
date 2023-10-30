@@ -240,7 +240,9 @@ class BCOO(BSparse):
         )
         for i, j in np.ndindex(submatrix.bshape):
             value = self[int(rows[i]), int(cols[j])]
-            if isinstance(value, (sparse.Sparse, sp.spmatrix)) and value.nnz == 0:
+            if (
+                isinstance(value, sparse.Sparse) or sp.issparse(value)
+            ) and value.nnz == 0:
                 continue
             if isinstance(value, np.ndarray) and np.all(value == 0):
                 continue
@@ -314,7 +316,7 @@ class BCOO(BSparse):
         if not isinstance(key, tuple) or len(key) != 2:
             raise IndexError("Invalid index.")
 
-        if not isinstance(value, (np.ndarray, sparse.Sparse, sp.spmatrix)):
+        if not (isinstance(value, (np.ndarray, sparse.Sparse)) or sp.issparse(value)):
             raise ValueError("Invalid value.")
 
         value = value.astype(self.dtype)
@@ -333,7 +335,7 @@ class BCOO(BSparse):
                 return
 
         all_zero = (
-            isinstance(value, (sparse.Sparse, sp.spmatrix))
+            (isinstance(value, sparse.Sparse) or sp.issparse(value))
             and value.nnz == 0
             or isinstance(value, np.ndarray)
             and np.all(value == 0)
@@ -368,7 +370,7 @@ class BCOO(BSparse):
         self._col_sizes[col] = value.shape[1]
 
     def __add__(
-        self, other: Number | BSparse | np.ndarray | sp.spmatrix
+        self, other: Number | BSparse | np.ndarray | sp.sparray
     ) -> "BCOO | np.ndarray":
         """Adds another matrix or a scalar to this matrix."""
         if isinstance(other, Number):
@@ -379,8 +381,8 @@ class BCOO(BSparse):
             return self.toarray() + other
         if isinstance(other, BSparse):
             other = other.tocoo()
-        if isinstance(other, sp.spmatrix):
-            other = BCOO.from_spmatrix(other, (self.row_sizes, self.col_sizes))
+        if sp.issparse(other):
+            other = BCOO.from_sparray(other, (self.row_sizes, self.col_sizes))
 
         if not isinstance(other, BCOO):
             raise TypeError("Invalid type.")
@@ -424,25 +426,25 @@ class BCOO(BSparse):
         )
 
     def __radd__(
-        self, other: Number | BSparse | np.ndarray | sp.spmatrix
+        self, other: Number | BSparse | np.ndarray | sp.sparray
     ) -> "BCOO | np.ndarray":
         """Adds this matrix to another matrix or a scalar."""
         return self + other
 
     def __sub__(
-        self, other: Number | BSparse | np.ndarray | sp.spmatrix
+        self, other: Number | BSparse | np.ndarray | sp.sparray
     ) -> "BCOO | np.ndarray":
         """Subtracts another matrix or a scalar from this matrix."""
         return self + (-other)
 
     def __rsub__(
-        self, other: Number | BSparse | np.ndarray | sp.spmatrix
+        self, other: Number | BSparse | np.ndarray | sp.sparray
     ) -> "BCOO | np.ndarray":
         """Subtracts this matrix from another matrix or a scalar."""
         return other + (-self)
 
     def __mul__(
-        self, other: Number | BSparse | np.ndarray | sp.spmatrix
+        self, other: Number | BSparse | np.ndarray | sp.sparray
     ) -> "BCOO | np.ndarray":
         """Multiplies another matrix or a scalar by this matrix."""
         if isinstance(other, Number):
@@ -462,8 +464,8 @@ class BCOO(BSparse):
             return self.toarray() * other
         if isinstance(other, BSparse):
             other = other.tocoo()
-        if isinstance(other, sp.spmatrix):
-            other = BCOO.from_spmatrix(other, (self.row_sizes, self.col_sizes))
+        if sp.issparse(other):
+            other = BCOO.from_sparray(other, (self.row_sizes, self.col_sizes))
 
         if not isinstance(other, BCOO):
             raise TypeError("Invalid type.")
@@ -501,13 +503,13 @@ class BCOO(BSparse):
         )
 
     def __rmul__(
-        self, other: Number | BSparse | np.ndarray | sp.spmatrix
+        self, other: Number | BSparse | np.ndarray | sp.sparray
     ) -> "BCOO | np.ndarray":
         """Multiplies this matrix by another matrix or a scalar."""
         return self * other
 
     def __truediv__(
-        self, other: Number | BSparse | np.ndarray | sp.spmatrix
+        self, other: Number | BSparse | np.ndarray | sp.sparray
     ) -> "BCOO | np.ndarray":
         """Divides this matrix by another matrix or a scalar."""
         if isinstance(other, Number):
@@ -523,7 +525,7 @@ class BCOO(BSparse):
                 self.symmetry,
             )
             return result
-        if isinstance(other, (BSparse, sp.spmatrix)):
+        if isinstance(other, BSparse) or sp.issparse(other):
             other = other.toarray()
 
         if not isinstance(other, np.ndarray):
@@ -532,12 +534,12 @@ class BCOO(BSparse):
         return self.toarray() / other
 
     def __rtruediv__(
-        self, other: Number | BSparse | np.ndarray | sp.spmatrix
+        self, other: Number | BSparse | np.ndarray | sp.sparray
     ) -> "BCOO | np.ndarray":
         """Divides another matrix or a scalar by this matrix."""
         if isinstance(other, Number):
             return other / self.toarray()
-        if isinstance(other, (BSparse, sp.spmatrix)):
+        if isinstance(other, BSparse) or sp.issparse(other):
             other = other.toarray()
 
         if not isinstance(other, np.ndarray):
@@ -559,20 +561,20 @@ class BCOO(BSparse):
         return result
 
     def __matmul__(
-        self, other: Number | BSparse | np.ndarray | sp.spmatrix
+        self, other: Number | BSparse | np.ndarray | sp.sparray
     ) -> "BCOO | np.ndarray":
         """Multiplies this matrix by another matrix."""
         if isinstance(other, np.ndarray):
             return self.toarray() @ other
         if isinstance(other, BSparse):
             other = other.tocoo()
-        if isinstance(other, sp.spmatrix):
+        if sp.issparse(other):
             warn(
                 "Automatically inferring block sizes from sparse matrix. "
                 "This may result in unexpected behavior. Consider "
                 "converting to a `BSparse` matrix."
             )
-            other = BCOO.from_spmatrix(other, (self.col_sizes, [1] * other.shape[1]))
+            other = BCOO.from_sparray(other, (self.col_sizes, [1] * other.shape[1]))
 
         if not isinstance(other, BCOO):
             raise TypeError("Invalid type.")
@@ -619,21 +621,21 @@ class BCOO(BSparse):
         )
 
     def __rmatmul__(
-        self, other: Number | BSparse | np.ndarray | sp.spmatrix
+        self, other: Number | BSparse | np.ndarray | sp.sparray
     ) -> "BCOO | np.ndarray":
         """Multiplies another matrix by this matrix."""
         if isinstance(other, np.ndarray):
             return other @ self.toarray()
         if isinstance(other, BSparse):
             return other.tocoo() @ self
-        if isinstance(other, sp.spmatrix):
+        if sp.issparse(other):
             warn(
                 "Automatically inferring block sizes from sparse matrix. "
                 "This may result in unexpected behavior. Consider "
                 "converting to a `BSparse` matrix."
             )
             return (
-                BCOO.from_spmatrix(other, ([1] * other.shape[0], self.row_sizes)) @ self
+                BCOO.from_sparray(other, ([1] * other.shape[0], self.row_sizes)) @ self
             )
 
     @property
@@ -941,9 +943,9 @@ class BCOO(BSparse):
         )
 
     @classmethod
-    def from_spmatrix(
+    def from_sparray(
         cls,
-        mat: sp.spmatrix,
+        mat: sp.sparray,
         sizes: tuple[ArrayLike, ArrayLike],
         symmetry: str | None = None,
     ) -> "BCOO":

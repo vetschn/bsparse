@@ -309,7 +309,7 @@ class CSR(Sparse):
         self.data = np.insert(self.data, self.rowptr[row + 1] - 1, value)
 
     def __add__(
-        self, other: Number | Sparse | np.ndarray | sp.spmatrix
+        self, other: Number | Sparse | np.ndarray | sp.sparray
     ) -> "CSR | np.ndarray":
         """Adds another matrix or a scalar to this matrix."""
         result = self.tocoo() + other
@@ -318,25 +318,25 @@ class CSR(Sparse):
         return result.tocsr()
 
     def __radd__(
-        self, other: Number | Sparse | np.ndarray | sp.spmatrix
+        self, other: Number | Sparse | np.ndarray | sp.sparray
     ) -> "CSR | np.ndarray":
         """Adds this matrix to another matrix or a scalar."""
         return self + other
 
     def __sub__(
-        self, other: Number | Sparse | np.ndarray | sp.spmatrix
+        self, other: Number | Sparse | np.ndarray | sp.sparray
     ) -> "CSR | np.ndarray":
         """Subtracts another matrix or a scalar from this matrix."""
         return self + (-other)
 
     def __rsub__(
-        self, other: Number | Sparse | np.ndarray | sp.spmatrix
+        self, other: Number | Sparse | np.ndarray | sp.sparray
     ) -> "CSR | np.ndarray":
         """Subtracts this matrix from another matrix or a scalar."""
         return other + (-self)
 
     def __mul__(
-        self, other: Number | Sparse | np.ndarray | sp.spmatrix
+        self, other: Number | Sparse | np.ndarray | sp.sparray
     ) -> "CSR | np.ndarray":
         """Multiplies another matrix or a scalar by this matrix."""
         result = self.tocoo() * other
@@ -345,13 +345,13 @@ class CSR(Sparse):
         return result.tocsr()
 
     def __rmul__(
-        self, other: Number | Sparse | np.ndarray | sp.spmatrix
+        self, other: Number | Sparse | np.ndarray | sp.sparray
     ) -> "CSR | np.ndarray":
         """Multiplies this matrix by another matrix or a scalar."""
         return self * other
 
     def __truediv__(
-        self, other: Number | Sparse | np.ndarray | sp.spmatrix
+        self, other: Number | Sparse | np.ndarray | sp.sparray
     ) -> "CSR | np.ndarray":
         """Divides this matrix by another matrix or a scalar."""
         result = self.tocoo() / other
@@ -360,7 +360,7 @@ class CSR(Sparse):
         return result.tocsr()
 
     def __rtruediv__(
-        self, other: Number | Sparse | np.ndarray | sp.spmatrix
+        self, other: Number | Sparse | np.ndarray | sp.sparray
     ) -> "CSR | np.ndarray":
         """Divides another matrix or a scalar by this matrix."""
         result = other / self.tocoo()
@@ -392,15 +392,15 @@ class CSR(Sparse):
         return result
 
     def __matmul__(
-        self, other: Number | Sparse | np.ndarray | sp.spmatrix
+        self, other: Number | Sparse | np.ndarray | sp.sparray
     ) -> "CSR | np.ndarray":
         """Multiplies this matrix by another matrix."""
         if isinstance(other, np.ndarray):
             return self._desymmetrize()._matmul_dense(other)
         if isinstance(other, Sparse):
             other = other.tocsr()
-        if isinstance(other, sp.spmatrix):
-            other = CSR.from_spmatrix(other)
+        if sp.issparse(other):
+            other = CSR.from_sparray(other)
 
         if not isinstance(other, CSR):
             raise TypeError("Invalid type.")
@@ -440,15 +440,15 @@ class CSR(Sparse):
         return result
 
     def __rmatmul__(
-        self, other: Number | Sparse | np.ndarray | sp.spmatrix
+        self, other: Number | Sparse | np.ndarray | sp.sparray
     ) -> "CSR | np.ndarray":
         """Multiplies another matrix by this matrix."""
         if isinstance(other, np.ndarray):
             return other @ self.toarray()
         if isinstance(other, Sparse):
             return other.tocsr() @ self
-        if isinstance(other, sp.spmatrix):
-            return CSR.from_spmatrix(other) @ self
+        if sp.issparse(other):
+            return CSR.from_sparray(other) @ self
 
     @property
     def shape(self) -> tuple[int, int]:
@@ -649,7 +649,7 @@ class CSR(Sparse):
         return cls(rowptr, cols, data, arr.shape, symmetry=symmetry)
 
     @classmethod
-    def from_spmatrix(cls, mat: sp.spmatrix, symmetry: str | None = None) -> "CSR":
+    def from_sparray(cls, mat: sp.sparray, symmetry: str | None = None) -> "CSR":
         """Creates a sparse matrix from a `scipy.sparse.spmatrix`."""
         mat = sp.csr_array(mat)
         return cls(mat.indptr, mat.indices, mat.data, mat.shape, symmetry=symmetry)
