@@ -21,7 +21,7 @@ classifiers = [
 keywords = ["Nano-TCAD", "Sparse Matrices", "Block Matrices"]
 dynamic = ["version"]
 requires-python = ">=3.11"
-dependencies = ["numpy", "scipy"]
+dependencies = ["numpy", "scipy>=1.11"]
 
 [project.urls]
 Code = "https://github.com/vetschn/bsparse"
