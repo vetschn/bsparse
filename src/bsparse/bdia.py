@@ -875,6 +875,13 @@ class BDIA(BSparse):
         """Returns a DIAgonal representation of the matrix."""
         return self
 
+    def bapply(self, func: callable, copy: bool = False) -> "BDIA":
+        """Applies a function to each matrix block."""
+        if copy:
+            self = self.copy()
+        self.data = [[func(b) for b in bdiag] for bdiag in self.data]
+        return self
+
     def save_npz(self, filename: str) -> None:
         """Saves the matrix as ``.npz`` archive."""
         np.savez_compressed(

@@ -758,6 +758,13 @@ class BCSR(BSparse):
         """Converts the matrix to `BDIA` format."""
         return self.tocoo().todia()
 
+    def bapply(self, func: callable, copy: bool = False) -> "BCSR":
+        """Applies a function to each matrix block."""
+        if copy:
+            self = self.copy()
+        self.data = [func(b) for b in self.data]
+        return self
+
     def save_npz(self, filename: str) -> None:
         """Saves the matrix as ``.npz`` archive."""
         np.savez_compressed(

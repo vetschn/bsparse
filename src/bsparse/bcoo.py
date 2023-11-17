@@ -890,6 +890,13 @@ class BCOO(BSparse):
             self.symmetry,
         )
 
+    def bapply(self, func: callable, copy: bool = False) -> "BCOO":
+        """Applies a function to each matrix block."""
+        if copy:
+            self = self.copy()
+        self.data = [func(b) for b in self.data]
+        return self
+
     def save_npz(self, filename: str) -> None:
         """Saves the matrix to a `numpy.npz` file."""
         np.savez_compressed(
