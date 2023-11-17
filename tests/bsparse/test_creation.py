@@ -139,8 +139,7 @@ def test_from_sparray_format(
 
     bsparse = bsparse_type.from_sparray(spmat, sizes)
     assert np.allclose(bsparse.toarray(), spmat.toarray())
-    assert bsparse[0,0].format == sparray_format
-
+    assert bsparse[0, 0].format == sparray_format
 
 
 @pytest.mark.parametrize(
