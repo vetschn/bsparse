@@ -68,6 +68,42 @@ class BSparse(Sparse):
         """Converts the matrix to a ``DIA`` format."""
         ...
 
+    def asbformat(self, format: str) -> "BSparse":
+        """Converts the underlying matrix blocks to a given format.
+
+        Parameters
+        ----------
+        format : str
+            The format to convert the matrix blocks to. Can be one of
+            'coo', 'csc', 'csr', 'dia', 'dok', 'lil' or 'array'.
+
+        Returns
+        -------
+        BSparse
+            The matrix with the converted matrix blocks.
+
+        """
+        if format == "coo":
+            return self.bapply(lambda b: b.tocoo())
+        if format == "csc":
+            return self.bapply(lambda b: b.tocsc())
+        if format == "csr":
+            return self.bapply(lambda b: b.tocsr())
+        if format == "dia":
+            return self.bapply(lambda b: b.todia())
+        if format == "dok":
+            return self.bapply(lambda b: b.todok())
+        if format == "lil":
+            return self.bapply(lambda b: b.tolil())
+        if format == "array":
+            return self.bapply(lambda b: b.toarray())
+        raise ValueError("Invalid format.")
+
+    @abstractmethod
+    def bapply(self, func: callable, copy: bool = False) -> "BSparse":
+        """Applies a function to each matrix block."""
+        ...
+
     @abstractmethod
     def save_npz(self, filename: str) -> None:
         """Saves the matrix to a ``.npz`` file."""
