@@ -816,6 +816,7 @@ class BCSR(BSparse):
         symmetry: str | None = None,
     ) -> "BCSR":
         """Creates a sparse matrix from a `scipy.sparse.sparray`."""
+        sparray_format = mat.format
         mat = sp.lil_array(mat)
         row_sizes, col_sizes = sizes
         if mat.shape != (np.sum(row_sizes), np.sum(col_sizes)):
@@ -833,7 +834,7 @@ class BCSR(BSparse):
                     continue
                 rows.append(i)
                 cols.append(j)
-                data.append(b)
+                data.append(b.asformat(sparray_format))
 
         bshape = (len(row_sizes), len(col_sizes))
 

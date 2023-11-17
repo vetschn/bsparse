@@ -950,6 +950,7 @@ class BCOO(BSparse):
         symmetry: str | None = None,
     ) -> "BCOO":
         """Creates a `BCOO` matrix from a `scipy.sparse.sparray`."""
+        sparray_format = mat.format
         mat = sp.lil_array(mat)
         row_sizes, col_sizes = sizes
         if mat.shape != (np.sum(row_sizes), np.sum(col_sizes)):
@@ -967,7 +968,7 @@ class BCOO(BSparse):
                     continue
                 rows.append(i)
                 cols.append(j)
-                data.append(b)
+                data.append(b.asformat(sparray_format))
 
         return cls(
             rows,
