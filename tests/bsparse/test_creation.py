@@ -108,6 +108,42 @@ def test_from_sparray(
 
 
 @pytest.mark.parametrize(
+    "sizes",
+    [
+        pytest.param((np.arange(1, 6), np.arange(1, 6)), id="5x5"),
+        pytest.param((np.arange(1, 11), np.arange(1, 6)), id="10x5"),
+        pytest.param((np.arange(1, 6), np.arange(1, 11)), id="5x10"),
+    ],
+)
+@pytest.mark.parametrize(
+    "sparray_format",
+    [
+        pytest.param("coo", id="COO"),
+        pytest.param("csr", id="CSR"),
+        pytest.param("dia", id="DIA"),
+    ],
+)
+@pytest.mark.parametrize(
+    "bsparse_type",
+    [
+        pytest.param(BCOO, id="BCOO"),
+        pytest.param(BCSR, id="BCSR"),
+        pytest.param(BDIA, id="BDIA"),
+    ],
+)
+def test_from_sparray_format(
+    bsparse_type: BSparse, sizes: tuple[ArrayLike, ArrayLike], sparray_format: str
+):
+    shape = (sizes[0].sum(), sizes[1].sum())
+    spmat = (1 + 1j) * sp.random(*shape, 1.0, format=sparray_format)
+
+    bsparse = bsparse_type.from_sparray(spmat, sizes)
+    assert np.allclose(bsparse.toarray(), spmat.toarray())
+    assert bsparse[0,0].format == sparray_format
+
+
+
+@pytest.mark.parametrize(
     "bshape",
     [
         pytest.param((5, 5), id="5x5"),
