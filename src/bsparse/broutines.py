@@ -279,14 +279,18 @@ def load_npz(file: Path) -> BSparse:
     if "format" not in npz:
         raise ValueError("No format specified.")
 
-    bshape, dtype, symmetry = npz["bshape"], npz["dtype"].item(), npz["symmetry"].item()
+    bshape, dtype, symmetry = (
+        tuple(npz["bshape"]),
+        npz["dtype"].item(),
+        npz["symmetry"].item(),
+    )
     sizes = npz["row_sizes"], npz["col_sizes"]
 
     if npz["format"] == "bcoo":
         return BCOO(
             npz["rows"],
             npz["cols"],
-            npz["data"].tolist(),
+            [b for b in npz["data"]],
             bshape,
             dtype,
             sizes,
@@ -296,7 +300,7 @@ def load_npz(file: Path) -> BSparse:
         return BCSR(
             npz["rowptr"],
             npz["cols"],
-            npz["data"].tolist(),
+            [b for b in npz["data"]],
             bshape,
             dtype,
             sizes,
@@ -305,7 +309,7 @@ def load_npz(file: Path) -> BSparse:
     if npz["format"] == "bdia":
         return BDIA(
             npz["offsets"],
-            npz["data"].tolist(),
+            [[b for b in bdiag] for bdiag in npz["data"]],
             bshape,
             dtype,
             sizes,
