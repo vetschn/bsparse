@@ -1,0 +1,11 @@
+﻿
+
+bsparse.diag
+============
+
+.. currentmodule:: bsparse
+
+
+
+.. autofunction:: bsparse::diag
+

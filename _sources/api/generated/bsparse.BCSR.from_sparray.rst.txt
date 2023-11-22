@@ -1,0 +1,9 @@
+:orphan:
+
+bsparse.BCSR.from\_sparray
+==========================
+
+.. currentmodule:: bsparse
+
+.. automethod:: bsparse::BCSR.from_sparray
+

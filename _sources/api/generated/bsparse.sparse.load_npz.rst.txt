@@ -1,0 +1,11 @@
+﻿
+
+bsparse.sparse.load\_npz
+========================
+
+.. currentmodule:: bsparse.sparse
+
+
+
+.. autofunction:: bsparse::sparse.load_npz
+

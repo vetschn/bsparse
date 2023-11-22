@@ -1,0 +1,9 @@
+:orphan:
+
+bsparse.BCOO.save\_npz
+======================
+
+.. currentmodule:: bsparse
+
+.. automethod:: bsparse::BCOO.save_npz
+

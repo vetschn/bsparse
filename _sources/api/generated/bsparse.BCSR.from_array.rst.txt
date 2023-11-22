@@ -1,0 +1,9 @@
+:orphan:
+
+bsparse.BCSR.from\_array
+========================
+
+.. currentmodule:: bsparse
+
+.. automethod:: bsparse::BCSR.from_array
+

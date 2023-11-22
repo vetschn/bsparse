@@ -1,0 +1,9 @@
+:orphan:
+
+bsparse.sparse.CSR.toarray
+==========================
+
+.. currentmodule:: bsparse.sparse
+
+.. automethod:: bsparse::sparse.CSR.toarray
+

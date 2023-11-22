@@ -1,0 +1,9 @@
+:orphan:
+
+bsparse.sparse.COO.from\_array
+==============================
+
+.. currentmodule:: bsparse.sparse
+
+.. automethod:: bsparse::sparse.COO.from_array
+

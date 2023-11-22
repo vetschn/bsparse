@@ -1,0 +1,15 @@
+
+:orphan:
+
+
+bsparse.BCSR.dtype
+==================
+
+.. currentmodule:: bsparse
+
+
+property
+
+
+.. autoproperty:: bsparse::BCSR.dtype
+

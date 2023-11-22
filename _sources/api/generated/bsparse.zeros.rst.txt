@@ -1,0 +1,11 @@
+﻿
+
+bsparse.zeros
+=============
+
+.. currentmodule:: bsparse
+
+
+
+.. autofunction:: bsparse::zeros
+

@@ -1,0 +1,11 @@
+﻿
+
+bsparse.sparse.eye
+==================
+
+.. currentmodule:: bsparse.sparse
+
+
+
+.. autofunction:: bsparse::sparse.eye
+

@@ -1,0 +1,11 @@
+:orphan:
+
+bsparse.sparse.DIA.ndim
+=======================
+
+.. currentmodule:: bsparse.sparse
+
+attribute
+
+.. autoattribute:: bsparse::sparse.DIA.ndim
+

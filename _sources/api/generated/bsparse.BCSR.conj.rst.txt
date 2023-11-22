@@ -1,0 +1,9 @@
+:orphan:
+
+bsparse.BCSR.conj
+=================
+
+.. currentmodule:: bsparse
+
+.. automethod:: bsparse::BCSR.conj
+

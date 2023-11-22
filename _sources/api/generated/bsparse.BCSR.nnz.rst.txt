@@ -1,0 +1,15 @@
+
+:orphan:
+
+
+bsparse.BCSR.nnz
+================
+
+.. currentmodule:: bsparse
+
+
+property
+
+
+.. autoproperty:: bsparse::BCSR.nnz
+
