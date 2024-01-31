@@ -125,9 +125,14 @@ html_theme = "pydata_sphinx_theme"
 # further.  For a list of options available for each theme, see the
 # documentation.
 html_theme_options = {
+    "logo": {
+        "image_light": "_static/bsparse_logo.png",
+        "image_dark": "_static/bsparse_logo_dark.png",
+    },
     "github_url": "https://github.com/vetschn/bsparse",
     "collapse_navigation": True,
     "icon_links": [],  # See https://github.com/pydata/pydata-sphinx-theme/issues/1220
+    "secondary_sidebar_items": [],
 }
 
 html_css_files = ["bsparse.css"]
@@ -145,17 +150,19 @@ html_context = {"default_mode": "light"}
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
-html_logo = "_static/bsparse.png"
+# html_logo = None
 
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
 # pixels large.
-# html_favicon = None
+html_favicon = "_static/favicon/favicon.ico"
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
+
+html_css_files = ["bsparse.css"]
 
 # Add any extra paths that contain custom files (such as robots.txt or
 # .htaccess) here, relative to this directory. These files are copied
@@ -171,7 +178,9 @@ html_static_path = ["_static"]
 # html_use_smartypants = True
 
 # Custom sidebar templates, maps document names to template names.
-# html_sidebars = {}
+html_sidebars = {
+    "index": [],
+}
 
 # Additional templates that should be rendered to pages, maps page names to
 # template names.
