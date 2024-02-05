@@ -12,11 +12,14 @@ from bsparse.bsparse import BSparse
 class BCSR(BSparse):
     """A sparse matrix in Compressed Sparse Row format.
 
-    The ``CSR`` class represents a sparse matrix using three arrays:
+    The `BCSR` class represents a sparse matrix using three arrays:
 
-    * ``rowptr``: contains the index of the first element of each row.
-    * ``cols``: contains the column indices of each non-zero element.
-    * ``data``: contains the values of each non-zero element.
+    * `rowptr`: contains the index of the first element of each row.
+    * `cols`: contains the column indices of each non-zero element.
+    * `data`: contains the values of each non-zero element.
+
+    .. figure:: ../figures/bcsr.jpg
+        :scale: 25%
 
     Parameters
     ----------
@@ -41,6 +44,51 @@ class BCSR(BSparse):
         possible values are ``'symmetric'`` and ``'hermitian'``. Note
         that when setting a symmetry, the lower triangular part of the
         matrix is discarded.
+
+    Attributes
+    ----------
+    rowptr : ndarray
+        The index of the first element of each row.
+    cols : ndarray
+        The column coordinates of the non-zero elements.
+    data : list of ndarray, scipy.sparse, sparse.Sparse, or BSparse
+        The values of the non-zero elements.
+    shape : tuple[int, int]
+        The shape of the matrix.
+    bshape : tuple[int, int]
+        The block shape of the matrix.
+    row_sizes : ndarray
+        The sizes of the row elements.
+    col_sizes : ndarray
+        The sizes of the column elements.
+    dtype : dtype
+        The data type of the matrix.
+    symmetry : str
+        The symmetry of the matrix.
+    nnz : int
+        The number of stored elements in the matrix.
+    bnnz : int
+        The number of stored blocks in the matrix.
+    T : BCSR
+        The transpose of the matrix.
+    H : BCSR
+        The conjugate transpose of the matrix.
+
+    Examples
+    --------
+    >>> rowptr = [0, 2, 3, 5]
+    >>> cols = [0, 1, 1, 2, 2]
+    >>> data = [i * np.eye(2) for i in range(1, 6)]
+    >>> bcsr = BCSR(rowptr, cols, data)
+    >>> bcsr
+    BCSR(bshape=(3, 3), bnnz=5 | shape=(6, 6), nnz=20)
+    >>> bcsr.toarray()
+    array([[1., 0., 2., 0., 0., 0.],
+           [0., 1., 0., 2., 0., 0.],
+           [0., 0., 3., 0., 0., 0.],
+           [0., 0., 0., 3., 0., 0.],
+           [0., 0., 0., 0., 5., 0.],
+           [0., 0., 0., 0., 0., 5.]])
 
     """
 

@@ -33,6 +33,14 @@ def zeros(
     BSparse
         An empty sparse matrix of specified bshape and dtype.
 
+    Examples
+    --------
+    >>> bdia = zeros((3,3), format="bdia")
+    >>> bdia
+    BDIA(bshape=(3, 3), bnnz=0 | shape=(3, 3), nnz=0)
+    >>> bdia[0, 0]
+    COO(shape=(1, 1), nnz=0, dtype=float64)
+
     """
     format = format.lower()
     if format == "bcoo":
@@ -67,6 +75,11 @@ def eye(
     -------
     BSparse
         A sparse identity matrix of specified bshape and dtype.
+
+    Examples
+    --------
+    >>> eye((3,3))
+    BCOO(bshape=(3, 3), bnnz=3 | shape=(3, 3), nnz=3)
 
     """
     start = (-offset) * bshape[1] if offset < 0 else offset
@@ -178,6 +191,32 @@ def diag(
     BSparse
         A sparse diagonal matrix of specified values and offset.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> values = [i * np.ones((2, 2)) for i in range(1, 4)]
+    >>> bcoo = diag(values)
+    >>> bcoo
+    BCOO(bshape=(3, 3), bnnz=3 | shape=(6, 6), nnz=12)
+    >>> bcoo.toarray()
+    array([[1., 1., 0., 0., 0., 0.],
+           [1., 1., 0., 0., 0., 0.],
+           [0., 0., 2., 2., 0., 0.],
+           [0., 0., 2., 2., 0., 0.],
+           [0., 0., 0., 0., 3., 3.],
+           [0., 0., 0., 0., 3., 3.]])
+
+    With overlap:
+
+    >>> bcoo = diag(values, overlap=1)
+    >>> bcoo
+    BCOO(bshape=(4, 4), bnnz=10 | shape=(4, 4), nnz=10)
+    >>> bcoo.toarray()
+    array([[1., 1., 0., 0.],
+           [1., 3., 2., 0.],
+           [0., 2., 5., 3.],
+           [0., 0., 3., 3.]])
+
     """
     if overlap > 0:
         if bshape is not None:
@@ -234,6 +273,19 @@ def random(
     -------
     BSparse
         A sparse random matrix of specified shape and density.
+
+    Examples
+    --------
+    >>> bcoo = random((3,3))
+    >>> bcoo # doctest: +SKIP
+    BCOO(bshape=(3, 3), bnnz=0 | shape=(3, 3), nnz=0)
+    >>> bcoo = random((3,3), density=0.9)
+    >>> bcoo # doctest: +SKIP
+    BCOO(bshape=(3, 3), bnnz=8 | shape=(3, 3), nnz=8)
+    >>> bcoo.toarray() # doctest: +SKIP
+    array([[0.        , 0.15029409, 0.52752179],
+           [0.146725  , 0.44512433, 0.48044659],
+           [0.6987136 , 0.78170356, 0.09361786]])
 
     """
     if density < 0 or density > 1:

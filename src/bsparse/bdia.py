@@ -12,13 +12,16 @@ from bsparse.bsparse import BSparse
 class BDIA(BSparse):
     """A sparse matrix in DIAgonal format.
 
-    The ``DIA`` class represents a sparse matrix using two arrays:
+    The `BDIA` class represents a sparse matrix using two arrays:
 
-    * ``offsets``: the offsets of the diagonals, where zero indicates
+    * `offsets`: the offsets of the diagonals, where zero indicates
       the main diagonal, positive values are above the main diagonal,
       and negative values are below the main diagonal.
-    * ``data``: the values of the diagonals, *not* padded with zeros.
+    * `data`: the values of the diagonals, *not* padded with zeros.
       Diagonals have varying lengths.
+
+    .. figure:: ../figures/bdia.jpg
+        :scale: 25%
 
     Parameters
     ----------
@@ -41,6 +44,52 @@ class BDIA(BSparse):
         possible values are ``'symmetric'`` and ``'hermitian'``. Note
         that when setting a symmetry, the lower triangular part of the
         matrix is discarded.
+
+    Attributes
+    ----------
+    offsets : ndarray
+        The offsets of the block diagonals.
+    data : list of lists of ndarray, scipy.sparse, ...
+        The values of the block diagonals. The inner lists represent
+        the block diagonals, and the inner arrays represent the blocks.
+    shape : tuple[int, int]
+        The shape of the matrix.
+    bshape : tuple[int, int]
+        The block shape of the matrix.
+    row_sizes : ndarray
+        The sizes of the row elements.
+    col_sizes : ndarray
+        The sizes of the column elements.
+    dtype : dtype
+        The data type of the matrix.
+    symmetry : str
+        The symmetry of the matrix.
+    nnz : int
+        The number of stored elements in the matrix.
+    bnnz : int
+        The number of stored blocks in the matrix.
+    T : BDIA
+        The transpose of the matrix.
+    H : BDIA
+        The conjugate transpose of the matrix.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> offsets = [0, 1, -1]
+    >>> data = [
+    ...     [np.array([[1, 0], [0, 2]]), np.array([[3, 0], [0, 4]])],
+    ...     [np.array([[5, 0], [0, 6]])],
+    ...     [np.array([[7, 0], [0, 8]])],
+    ... ]
+    >>> bdia = BDIA(offsets, data)
+    >>> bdia
+    BDIA(bshape=(2, 2), bnnz=4 | shape=(4, 4), nnz=16)
+    >>> bdia.toarray()
+    array([[1, 0, 5, 0],
+           [0, 2, 0, 6],
+           [7, 0, 3, 0],
+           [0, 8, 0, 4]])
 
     """
 
