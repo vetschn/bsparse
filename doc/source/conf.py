@@ -40,6 +40,7 @@ extensions = [
     "sphinx.ext.autosummary",
     "sphinx.ext.ifconfig",
     "sphinx.ext.mathjax",
+    "sphinx_design",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -58,7 +59,7 @@ master_doc = "index"
 
 # General information about the project.
 project = "bsparse"
-copyright = "2023, Nicolas Vetsch"
+copyright = "2024, Nicolas Vetsch"
 author = "Nicolas Vetsch"
 
 # The version info for the project you're documenting, acts as replacement for
@@ -133,6 +134,7 @@ html_theme_options = {
     "collapse_navigation": True,
     "icon_links": [],  # See https://github.com/pydata/pydata-sphinx-theme/issues/1220
     "secondary_sidebar_items": [],
+    "show_nav_level": 2,
 }
 
 html_css_files = ["bsparse.css"]
