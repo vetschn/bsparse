@@ -32,6 +32,13 @@ def zeros(
     Sparse
         An empty sparse matrix of specified shape and dtype.
 
+    Examples
+    --------
+    >>> zeros((3, 3))
+    COO(shape=(3, 3), nnz=0, dtype=float64)
+    >>> zeros((3, 3), format="csr")
+    CSR(shape=(3, 3), nnz=0, dtype=float64)
+
     """
     format = format.lower()
     if format == "coo":
@@ -66,6 +73,17 @@ def eye(
     -------
     Sparse
         A sparse identity matrix of specified shape and dtype.
+
+    Examples
+    --------
+    >>> eye((3, 3))
+    COO(shape=(3, 3), nnz=3, dtype=float64)
+    >>> eye((3, 3), format="csr")
+    CSR(shape=(3, 3), nnz=3, dtype=float64)
+    >>> eye((3, 3)).toarray()
+    array([[1., 0., 0.],
+           [0., 1., 0.],
+           [0., 0., 1.]])
 
     """
     start = (-offset) * shape[1] if offset < 0 else offset
@@ -114,6 +132,20 @@ def diag(
     -------
     Sparse
         A sparse diagonal matrix of specified values and offset.
+
+    Examples
+    --------
+    >>> diag([1, 2, 3])
+    COO(shape=(3, 3), nnz=3, dtype=int64)
+    >>> diag([1, 2, 3], format="csr").toarray()
+    array([[1, 0, 0],
+           [0, 2, 0],
+           [0, 0, 3]])
+    >>> diag([1, 2, 3], offset=1).toarray()
+    array([[0, 1, 0, 0],
+           [0, 0, 2, 0],
+           [0, 0, 0, 3],
+           [0, 0, 0, 0]])
 
     """
     values = np.asarray(values)
@@ -166,6 +198,15 @@ def random(
     -------
     Sparse
         A sparse random matrix of specified shape and density.
+
+    Examples
+    --------
+    >>> random((3, 3)) # doctest: +SKIP
+    COO(shape=(3, 3), nnz=1, dtype=float64)
+    >>> random((3, 3), format="csr").toarray() # doctest: +SKIP
+    array([[0.        , 0.        , 0.        ],
+           [0.        , 0.        , 0.        ],
+           [0.        , 0.        , 0.04794364]])
 
     """
     if density < 0 or density > 1:

@@ -11,11 +11,14 @@ from bsparse.sparse.sparse import Sparse
 class CSR(Sparse):
     """A sparse matrix in Compressed Sparse Row format.
 
-    The ``CSR`` class represents a sparse matrix using three arrays:
+    The `CSR` class represents a sparse matrix using three arrays:
 
-    * ``rowptr``: contains the index of the first element of each row.
-    * ``cols``: contains the column indices of each non-zero element.
-    * ``data``: contains the values of each non-zero element.
+    * `rowptr`: contains the index of the first element of each row.
+    * `cols`: contains the column indices of each non-zero element.
+    * `data`: contains the values of each non-zero element.
+
+    .. figure:: ../figures/csr.jpg
+        :scale: 25%
 
     Parameters
     ----------
@@ -37,6 +40,39 @@ class CSR(Sparse):
         possible values are ``'symmetric'`` and ``'hermitian'``. Note
         that when setting a symmetry, the lower triangular part of the
         matrix is discarded.
+
+    Attributes
+    ----------
+    rowptr : ndarray
+        The index of the first element of each row.
+    cols : ndarray
+        The column coordinates of the non-zero elements.
+    data : ndarray
+        The values of the diagonals.
+    shape : tuple[int, int]
+        The shape of the matrix.
+    dtype : dtype
+        The data type of the matrix.
+    symmetry : str
+        The symmetry of the matrix.
+    nnz : int
+        The number of stored elements in the matrix.
+    T : CSR
+        The transpose of the matrix.
+    H : CSR
+        The conjugate transpose of the matrix.
+
+
+    Examples
+    --------
+    >>> rowptr = [0, 2, 3, 5]
+    >>> cols = [0, 2, 1, 0, 2]
+    >>> data = [1, 2, 3, 4, 5]
+    >>> csr = CSR(rowptr, cols, data, shape=(3, 3))
+    >>> csr.toarray()
+    array([[1, 0, 2],
+           [0, 3, 0],
+           [4, 0, 5]])
 
     """
 

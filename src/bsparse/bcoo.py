@@ -12,14 +12,19 @@ from bsparse.bsparse import BSparse
 class BCOO(BSparse):
     """A sparse matrix container in COOrdinate format.
 
-    The ``BCOO`` class represents a sparse matrix using three arrays:
+    The `BCOO` class represents a sparse matrix using three arrays:
 
-    * ``rows``: contains the row coordinates of the non-zero elements.
-    * ``cols``: contains the column coordinates of the non-zero elements.
-    * ``data``: contains the values of the non-zero elements.
+    * `rows`: contains the row coordinates of the non-zero elements.
+    * `cols`: contains the column coordinates of the non-zero elements.
+    * `data`: contains the values of the non-zero elements.
+
+    .. figure:: ../figures/bcoo.jpg
+        :scale: 25%
 
     Upon creation, the matrix is sorted (lexicographically) by rows and
-    columns. Duplicate elements are not allowed.
+    columns.
+
+    Duplicate elements are not allowed.
 
     Parameters
     ----------
@@ -46,6 +51,53 @@ class BCOO(BSparse):
         possible values are ``'symmetric'`` and ``'hermitian'``. Note
         that when setting a symmetry, the lower triangular part of the
         matrix is discarded.
+
+    Attributes
+    ----------
+    rows : ndarray
+        The row coordinates of the non-zero elements.
+    cols : ndarray
+        The column coordinates of the non-zero elements.
+    data : list of ndarray, scipy.sparse, sparse.Sparse, or BSparse
+        The values of the non-zero elements.
+    shape : tuple[int, int]
+        The shape of the matrix.
+    bshape : tuple[int, int]
+        The block shape of the matrix.
+    row_sizes : ndarray
+        The sizes of the row elements.
+    col_sizes : ndarray
+        The sizes of the column elements.
+    dtype : dtype
+        The data type of the matrix.
+    symmetry : str
+        The symmetry of the matrix.
+    nnz : int
+        The number of stored elements in the matrix.
+    bnnz : int
+        The number of stored blocks in the matrix.
+    T : BCOO
+        The transpose of the matrix.
+    H : BCOO
+        The conjugate transpose of the matrix.
+
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> rows = [0, 1, 2, 1, 2, 2]
+    >>> cols = [0, 1, 2, 2, 0, 1]
+    >>> data = [i * np.ones((2, 2)) for i in range(1, 7)]
+    >>> bcoo = BCOO(rows, cols, data)
+    >>> bcoo
+    BCOO(bshape=(3, 3), bnnz=6 | shape=(6, 6), nnz=24)
+    >>> bcoo.toarray()
+    array([[1., 1., 0., 0., 0., 0.],
+           [1., 1., 0., 0., 0., 0.],
+           [0., 0., 2., 2., 4., 4.],
+           [0., 0., 2., 2., 4., 4.],
+           [5., 5., 6., 6., 3., 3.],
+           [5., 5., 6., 6., 3., 3.]])
 
     """
 

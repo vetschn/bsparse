@@ -10,16 +10,21 @@ from bsparse.sparse.sparse import Sparse
 
 
 class COO(Sparse):
-    """A sparse matrix in COOrdinate format.
+    """A sparse matrix in coordinate format.
 
-    The ``COO`` class represents a sparse matrix using three arrays:
+    The `COO` class represents a sparse matrix using three arrays:
 
-    * ``rows``: contains the row coordinates of the non-zero elements.
-    * ``cols``: contains the column coordinates of the non-zero elements.
-    * ``data``: contains the values of the non-zero elements.
+    * `rows`: contains the row coordinates of the non-zero elements.
+    * `cols`: contains the column coordinates of the non-zero elements.
+    * `data`: contains the values of the non-zero elements.
+
+    .. figure:: ../figures/coo.jpg
+        :scale: 25%
 
     During instantiation, the matrix is sorted (lexicographically) by
-    rows and columns. Duplicate elements are not allowed.
+    rows and columns.
+
+    Duplicate elements are not allowed.
 
     Parameters
     ----------
@@ -41,6 +46,39 @@ class COO(Sparse):
         possible values are ``'symmetric'`` and ``'hermitian'``. Note
         that when setting a symmetry, the lower triangular part of the
         matrix is discarded.
+
+    Attributes
+    ----------
+    rows : ndarray
+        The row coordinates of the non-zero elements.
+    cols : ndarray
+        The column coordinates of the non-zero elements.
+    data : ndarray
+        The values of the diagonals.
+    shape : tuple[int, int]
+        The shape of the matrix.
+    dtype : dtype
+        The data type of the matrix.
+    symmetry : str
+        The symmetry of the matrix.
+    nnz : int
+        The number of stored elements in the matrix.
+    T : COO
+        The transpose of the matrix.
+    H : COO
+        The conjugate transpose of the matrix.
+
+    Examples
+    --------
+    >>> rows = [0, 1, 2, 2, 3]
+    >>> cols = [1, 2, 2, 3, 4]
+    >>> data = [1, 2, 3, 4, 5]
+    >>> coo = COO(rows, cols, data, shape=(4, 5))
+    >>> coo.toarray()
+    array([[0, 1, 0, 0, 0],
+           [0, 0, 2, 0, 0],
+           [0, 0, 3, 4, 0],
+           [0, 0, 0, 0, 5]])
 
     """
 

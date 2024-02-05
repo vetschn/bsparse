@@ -30,9 +30,6 @@ Code = "https://github.com/vetschn/bsparse"
 version = { attr = "bsparse.__about__.__version__" }
 
 [tool.pytest.ini_options]
-addopts = ["--import-mode=importlib"]
-testpaths = ["tests"]
-filterwarnings = [
-    "ignore::UserWarning:bsparse",
-    "ignore::RuntimeWarning",
-]
+addopts = ["--import-mode=importlib", "--doctest-modules"]
+testpaths = ["tests", "src/bsparse"]
+filterwarnings = ["ignore::UserWarning:bsparse", "ignore::RuntimeWarning"]

@@ -4,67 +4,55 @@
     :maxdepth: 1
     :hidden:
 
+    User Guide <user/index>
     API Reference <api/index>
 
-bsparse
-=======
+bsparse documentation
+=====================
 
-Welcome to the documentation for bsparse!
+bsparse is a Python package implementing various sparse data structures
+and operations. 
 
-This is a Python package implementing block sparse matrices for
-scientific computing.
+Coercing data into sparse containers is a natural way of compression for
+multi-dimensional data that contains mostly zeros. This can also bring
+computational advantages for certain operations.
 
-Check out the full :doc:`api/index` for details on usage.
+bsparse provides a way of accessing these benefits in Python.
 
+.. grid:: 2
 
-What bsparse is:
-----------------
-- bsparse implements sparse data containers (that always have an
-  equivalent dense 2D array representation). As such, bsparse data
-  containers can store ...
+    .. grid-item-card::
+        :img-top: ../source/_static/material-icons/user_guide.svg
 
-  - ... dense matrices (of arbitrary shape and type).
-  - ... scipy.sparse matrices (of arbitrary shape and type).
-  - ... bsparse matrices (of arbitrary shape and type).
-  - ... a mixture of all three with the caveat that matrix rows and
-    columns ***must not be ragged***. (Matrix sub-blocks have to be
-    aligned along both axes.)
+        User Guide
+        ^^^^^^^^^^
 
-- bsparse Matrices implement...
+        The user guide provides in-depth information on the key concepts
+        of bsparse with some background information and explanations.
 
-  - ... all basic arithmetic operations (``+``, ``-``, ``*``, ``/`` )
-  - ... dedicated matrix multiplication (``@``)
-  - ... (conjugate) transposition (``.H``, ``.T``)
-  - ... symmetry flags for square (skew) symmetric/Hermitian matrices
-    to save memory
-  - ... (sliced) element access, modification, and changes to the
-    sparsity structure
-  - ... conversion routines (between extending classes and to dense
-    arrays)
-  - ... instantiation routines (from `numpy.ndarray`, from
-    `scipy.sparse.sparray`, ``eye``, ``diag`` (with a clever overlap
-    functionality!), ``random`` (with a density parameter))
-  - ... loading and saving to disk in ``.npz`` format
+        +++
 
-- A kind of bare bones (arguably worse) version of `scipy.sparse`
-- Useful if you work with very large block-sparse matrices and want to
-  implement algorithms making use of this structure.
-- Pretty Pythonic and straightforward to use if you know a little bit of
-  `numpy` and `scipy.sparse`.
+        .. button-ref:: user_guide
+            :expand:
+            :color: primary
+            :click-parent:
 
+            To the user guide
 
-What bsparse isn't:
--------------------
-* A comprehensive library for sparse matrices. It is rather focused on
-  providing a specific set of functionalities that were useful to the
-  developers.
-* A package that supports high performance linear algebra (for now).
-  Check out `scipy.sparse` if optimized sparse algorithms are what
-  you're after.
+    .. grid-item-card::
+        :img-top: ../source/_static/material-icons/api.svg
 
+        API Reference
+        ^^^^^^^^^^^^^
 
-Why bsparse?
-------------
-In our work we often encounter large, sparse, often diagonally dominant,
-block matrices. What we couldn't find was a suitable data structure in
-Python, hence this little package.
+        The API reference contains a detailed description of the
+        functions, modules, and data structures implemented in bsparse.
+
+        +++
+
+        .. button-ref:: api_reference
+            :expand:
+            :color: primary
+            :click-parent:
+
+            To the API reference

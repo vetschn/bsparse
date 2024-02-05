@@ -19,6 +19,9 @@ class DIA(Sparse):
     * ``data``: the values of the diagonals, padded with zeros so that
       each diagonal has the same length.
 
+    .. figure:: ../figures/dia.jpg
+        :scale: 25%
+
     Parameters
     ----------
     offsets : array_like
@@ -37,6 +40,46 @@ class DIA(Sparse):
         possible values are ``'symmetric'`` and ``'hermitian'``. Note
         that when setting a symmetry, the lower triangular part of the
         matrix is discarded.
+
+    Attributes
+    ----------
+    offsets : ndarray
+        The offsets of the diagonals.
+    data : ndarray
+        The values of the diagonals.
+    shape : tuple[int, int]
+        The shape of the matrix.
+    dtype : dtype
+        The data type of the matrix.
+    symmetry : str
+        The symmetry of the matrix.
+    nnz : int
+        The number of stored elements in the matrix.
+    T : DIA
+        The transpose of the matrix.
+    H : DIA
+        The conjugate transpose of the matrix.
+
+    Examples
+    --------
+    Construct a sparse matrix from dense arrays:
+
+    >>> import numpy as np
+    >>> dia = DIA.from_array(np.eye(3) + np.eye(3, k=1))
+    >>> dia
+    DIA(shape=(3, 3), nnz=6, dtype=float64)
+
+    Convert the matrix to a dense array:
+
+    >>> dia.toarray() # doctest: +NORMALIZE_WHITESPACE
+    array([[1., 1., 0.], [0., 1., 1.], [0., 0., 1.]])
+
+    Look at the underlying data:
+
+    >>> dia.offsets # doctest: +NORMALIZE_WHITESPACE
+    array([0, 1])
+    >>> dia.data # doctest: +NORMALIZE_WHITESPACE
+    array([[1., 1., 1.], [0., 1., 1.]])
 
     """
 
