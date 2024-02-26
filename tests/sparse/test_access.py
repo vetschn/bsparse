@@ -233,6 +233,43 @@ def test_hermitian(sparse_type: Sparse, shape: tuple[int, int], symmetry: str):
         pytest.param(DIA, id="DIA"),
     ],
 )
+def test_real_imag(sparse_type: Sparse, shape: tuple[int, int], symmetry: str):
+    """Tests the `.real` and `.imag` properties."""
+    arr = np.random.random(shape) + 1j * np.random.random(shape)
+
+    if symmetry == "symmetric":
+        arr = arr + arr.T
+    if symmetry == "hermitian":
+        arr = arr + arr.T.conj()
+
+    mat = sparse_type.from_array(arr, symmetry=symmetry)
+
+    assert np.allclose(mat.real.toarray(), arr.real)
+    assert np.allclose(mat.imag.toarray(), arr.imag)
+
+
+@pytest.mark.parametrize(
+    "shape",
+    [
+        pytest.param((5, 5), id="5x5"),
+    ],
+)
+@pytest.mark.parametrize(
+    "symmetry",
+    [
+        pytest.param(None, id="None"),
+        pytest.param("symmetric", id="symmetric"),
+        pytest.param("hermitian", id="hermitian"),
+    ],
+)
+@pytest.mark.parametrize(
+    "sparse_type",
+    [
+        pytest.param(COO, id="COO"),
+        pytest.param(CSR, id="CSR"),
+        pytest.param(DIA, id="DIA"),
+    ],
+)
 def test_conjugate(sparse_type: Sparse, shape: tuple[int, int], symmetry: str):
     """Tests the `.conj()` method."""
     arr = np.random.random(shape) + 1j * np.random.random(shape)

@@ -944,6 +944,8 @@ class BCOO(BSparse):
 
     def bapply(self, func: callable, copy: bool = False) -> "BCOO":
         """Applies a function to each matrix block."""
+        if self.symmetry is not None:
+            return self._desymmetrize().bapply(func, copy)
         if copy:
             self = self.copy()
         self.data = [func(b) for b in self.data]

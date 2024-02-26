@@ -261,6 +261,45 @@ def test_hermitian(bsparse_type: BSparse, bshape: tuple[int, int], symmetry: str
         pytest.param(BDIA, id="BDIA"),
     ],
 )
+def test_real_imag(bsparse_type: BSparse, bshape: tuple[int, int], symmetry: str):
+    """Tests the `.real` and `.imag` properties."""
+    arr = np.random.random(bshape) + 1j * np.random.random(bshape)
+
+    if symmetry == "symmetric":
+        arr = arr + arr.T
+    if symmetry == "hermitian":
+        arr = arr + arr.T.conjugate()
+
+    mat = bsparse_type.from_array(
+        arr, ([1] * bshape[0], [1] * bshape[1]), symmetry=symmetry
+    )
+
+    assert np.allclose(mat.real.toarray(), np.real(arr).astype(mat.dtype))
+    assert np.allclose(mat.imag.toarray(), np.imag(arr).astype(mat.dtype))
+
+
+@pytest.mark.parametrize(
+    "bshape",
+    [
+        pytest.param((5, 5), id="5x5"),
+    ],
+)
+@pytest.mark.parametrize(
+    "symmetry",
+    [
+        pytest.param(None, id="None"),
+        pytest.param("symmetric", id="symmetric"),
+        pytest.param("hermitian", id="hermitian"),
+    ],
+)
+@pytest.mark.parametrize(
+    "bsparse_type",
+    [
+        pytest.param(BCOO, id="BCOO"),
+        pytest.param(BCSR, id="BCSR"),
+        pytest.param(BDIA, id="BDIA"),
+    ],
+)
 def test_conjugate(bsparse_type: BSparse, bshape: tuple[int, int], symmetry: str):
     """Tests the `.conj()` method."""
     arr = np.random.random(bshape) + 1j * np.random.random(bshape)

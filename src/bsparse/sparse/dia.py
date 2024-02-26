@@ -561,6 +561,18 @@ class DIA(Sparse):
 
         return self.conjugate().T
 
+    @property
+    def imag(self) -> "DIA":
+        """The imaginary part of the matrix."""
+        if self.symmetry is not None:
+            return self._desymmetrize().imag
+        return DIA(self.offsets, self.data.imag, self.shape, self.dtype, self.symmetry)
+
+    @property
+    def real(self) -> "DIA":
+        """The real part of the matrix."""
+        return DIA(self.offsets, self.data.real, self.shape, self.dtype, self.symmetry)
+
     def conjugate(self) -> "DIA":
         """The complex conjugate of the matrix."""
         conjugate = DIA(
