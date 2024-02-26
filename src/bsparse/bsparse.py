@@ -31,6 +31,11 @@ class BSparse(Sparse):
         ...
 
     @property
+    def sizes(self) -> tuple[list, list]:
+        """The sizes of the rows and columns of the elements."""
+        return (self.row_sizes.tolist(), self.col_sizes.tolist())
+
+    @property
     @abstractmethod
     def row_sizes(self) -> np.ndarray:
         """The sizes of the rows of the elements."""
@@ -46,6 +51,16 @@ class BSparse(Sparse):
     def shape(self) -> tuple[int, int]:
         """The shape of the equivalent dense matrix."""
         return (self.row_sizes.sum(), self.col_sizes.sum())
+
+    @property
+    def real(self) -> "BSparse":
+        """The real part of the matrix."""
+        return self.bapply(np.real, copy=True)
+
+    @property
+    def imag(self) -> "BSparse":
+        """The imaginary part of the matrix."""
+        return self.bapply(np.imag, copy=True)
 
     @property
     @abstractmethod

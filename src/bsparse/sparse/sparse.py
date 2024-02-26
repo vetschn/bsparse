@@ -129,6 +129,18 @@ class Sparse(ABC):
         """The transpose of the matrix."""
         ...
 
+    @property
+    @abstractmethod
+    def real(self) -> "Sparse":
+        """The real part of the matrix."""
+        ...
+
+    @property
+    @abstractmethod
+    def imag(self) -> "Sparse":
+        """The imaginary part of the matrix."""
+        ...
+
     def conj(self) -> "Sparse":
         """The complex conjugate of the matrix."""
         return self.conjugate()

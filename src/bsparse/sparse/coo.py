@@ -616,6 +616,34 @@ class COO(Sparse):
         )
         return hermitian
 
+    @property
+    def real(self) -> "COO":
+        """The real part of the matrix."""
+        real = COO(
+            self.rows,
+            self.cols,
+            self.data.real,
+            self.shape,
+            self.dtype,
+            self.symmetry,
+        )
+        return real
+
+    @property
+    def imag(self) -> "COO":
+        """The imaginary part of the matrix."""
+        if self.symmetry is not None:
+            return self._desymmetrize().imag
+        imag = COO(
+            self.rows,
+            self.cols,
+            self.data.imag,
+            self.shape,
+            self.dtype,
+            self.symmetry,
+        )
+        return imag
+
     def conjugate(self) -> "COO":
         """The complex conjugate of the matrix."""
         conjugate = COO(

@@ -546,6 +546,34 @@ class CSR(Sparse):
         )
         return hermitian.tocsr()
 
+    @property
+    def real(self) -> "CSR":
+        """The real part of the matrix."""
+        real = CSR(
+            self.rowptr,
+            self.cols,
+            self.data.real,
+            self.shape,
+            self.dtype,
+            self.symmetry,
+        )
+        return real
+
+    @property
+    def imag(self) -> "CSR":
+        """The imaginary part of the matrix."""
+        if self.symmetry is not None:
+            return self._desymmetrize().imag
+        imag = CSR(
+            self.rowptr,
+            self.cols,
+            self.data.imag,
+            self.shape,
+            self.dtype,
+            self.symmetry,
+        )
+        return imag
+
     def conjugate(self) -> "CSR":
         """The complex conjugate of the matrix."""
         conjugate = CSR(
