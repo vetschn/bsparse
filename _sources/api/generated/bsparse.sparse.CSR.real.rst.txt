@@ -1,0 +1,15 @@
+
+:orphan:
+
+
+bsparse.sparse.CSR.real
+=======================
+
+.. currentmodule:: bsparse.sparse
+
+
+property
+
+
+.. autoproperty:: bsparse::sparse.CSR.real
+

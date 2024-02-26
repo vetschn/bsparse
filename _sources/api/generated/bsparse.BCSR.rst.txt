@@ -1,0 +1,51 @@
+﻿bsparse.BCSR
+============
+
+.. currentmodule:: bsparse
+
+.. autoclass:: BCSR
+
+   
+
+   .. HACK -- the point here is that we don't want this to appear in the output, but the autosummary should still generate the pages.
+      .. autosummary::
+         :toctree:
+      
+         BCSR.asbformat
+         BCSR.astype
+         BCSR.bapply
+         BCSR.conj
+         BCSR.conjugate
+         BCSR.copy
+         BCSR.diagonal
+         BCSR.from_array
+         BCSR.from_sparray
+         BCSR.save_npz
+         BCSR.toarray
+         BCSR.tocoo
+         BCSR.tocsr
+         BCSR.todia
+
+
+
+   
+
+   .. HACK -- the point here is that we don't want this to appear in the output, but the autosummary should still generate the pages.
+      .. autosummary::
+         :toctree:
+      
+         BCSR.H
+         BCSR.T
+         BCSR.bnnz
+         BCSR.bshape
+         BCSR.col_sizes
+         BCSR.dtype
+         BCSR.imag
+         BCSR.ndim
+         BCSR.nnz
+         BCSR.real
+         BCSR.row_sizes
+         BCSR.shape
+         BCSR.sizes
+         BCSR.symmetry
+

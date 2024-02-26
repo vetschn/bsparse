@@ -1,0 +1,15 @@
+
+:orphan:
+
+
+bsparse.BDIA.imag
+=================
+
+.. currentmodule:: bsparse
+
+
+property
+
+
+.. autoproperty:: bsparse::BDIA.imag
+

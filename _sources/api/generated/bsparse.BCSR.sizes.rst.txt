@@ -1,0 +1,15 @@
+
+:orphan:
+
+
+bsparse.BCSR.sizes
+==================
+
+.. currentmodule:: bsparse
+
+
+property
+
+
+.. autoproperty:: bsparse::BCSR.sizes
+

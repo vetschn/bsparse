@@ -1,0 +1,15 @@
+
+:orphan:
+
+
+bsparse.BCOO.T
+==============
+
+.. currentmodule:: bsparse
+
+
+property
+
+
+.. autoproperty:: bsparse::BCOO.T
+

@@ -1,0 +1,9 @@
+:orphan:
+
+bsparse.sparse.COO.copy
+=======================
+
+.. currentmodule:: bsparse.sparse
+
+.. automethod:: bsparse::sparse.COO.copy
+

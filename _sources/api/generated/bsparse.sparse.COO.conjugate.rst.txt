@@ -1,0 +1,9 @@
+:orphan:
+
+bsparse.sparse.COO.conjugate
+============================
+
+.. currentmodule:: bsparse.sparse
+
+.. automethod:: bsparse::sparse.COO.conjugate
+

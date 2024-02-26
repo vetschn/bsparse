@@ -1,0 +1,9 @@
+:orphan:
+
+bsparse.BCOO.todia
+==================
+
+.. currentmodule:: bsparse
+
+.. automethod:: bsparse::BCOO.todia
+

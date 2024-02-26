@@ -1,0 +1,9 @@
+:orphan:
+
+bsparse.BDIA.conjugate
+======================
+
+.. currentmodule:: bsparse
+
+.. automethod:: bsparse::BDIA.conjugate
+

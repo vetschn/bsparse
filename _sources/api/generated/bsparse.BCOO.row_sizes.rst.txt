@@ -1,0 +1,15 @@
+
+:orphan:
+
+
+bsparse.BCOO.row\_sizes
+=======================
+
+.. currentmodule:: bsparse
+
+
+property
+
+
+.. autoproperty:: bsparse::BCOO.row_sizes
+

@@ -1,0 +1,9 @@
+:orphan:
+
+bsparse.sparse.CSR.todia
+========================
+
+.. currentmodule:: bsparse.sparse
+
+.. automethod:: bsparse::sparse.CSR.todia
+

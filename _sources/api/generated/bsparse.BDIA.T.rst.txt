@@ -1,0 +1,15 @@
+
+:orphan:
+
+
+bsparse.BDIA.T
+==============
+
+.. currentmodule:: bsparse
+
+
+property
+
+
+.. autoproperty:: bsparse::BDIA.T
+

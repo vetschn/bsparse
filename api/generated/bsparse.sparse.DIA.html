@@ -1,0 +1,605 @@
+
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="" data-theme="light">
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+    <title>bsparse.sparse.DIA &#8212; bsparse 0.1.3 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "light";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
+<link href="../../_static/styles/bootstrap.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
+
+  
+  <link href="../../_static/vendor/fontawesome/6.5.1/css/all.min.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.1/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.1/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.1/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/bsparse.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8d27b9dea8ad943066ae" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
+  <script src="../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
+
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/design-tabs.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'api/generated/bsparse.sparse.DIA';</script>
+    <link rel="icon" href="../../_static/favicon.ico"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="bsparse.sparse.DIA.astype" href="bsparse.sparse.DIA.astype.html" />
+    <link rel="prev" title="bsparse.sparse.CSR.todia" href="bsparse.sparse.CSR.todia.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="light">
+
+  
+  
+  <a id="pst-skip-link" class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>
+    Back to top
+  </button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar">
+<div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+    <span class="fa-solid fa-bars"></span>
+  </label>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+    
+    
+    
+    <img src="../../_static/bsparse_logo.png" class="logo__image only-light" alt="bsparse 0.1.3 documentation - Home"/>
+    <script>document.write(`<img src="../../_static/bsparse_logo_dark.png" class="logo__image only-dark" alt="bsparse 0.1.3 documentation - Home"/>`);</script>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav class="navbar-nav">
+  <ul class="bd-navbar-elements navbar-nav">
+    
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../user/index.html">
+                        User Guide
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item current active">
+                      <a class="nav-link nav-internal" href="../index.html">
+                        API Reference
+                      </a>
+                    </li>
+                
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+ <script>
+ document.write(`
+   <button class="btn navbar-btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  </button>
+`);
+</script></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links navbar-nav"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/vetschn/bsparse" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><span><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i></span>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+ <script>
+ document.write(`
+   <button class="btn navbar-btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          <div class="navbar-item">
+<nav class="navbar-nav">
+  <ul class="bd-navbar-elements navbar-nav">
+    
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../user/index.html">
+                        User Guide
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item current active">
+                      <a class="nav-link nav-internal" href="../index.html">
+                        API Reference
+                      </a>
+                    </li>
+                
+  </ul>
+</nav></div>
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  </button>
+`);
+</script></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links navbar-nav"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/vetschn/bsparse" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><span><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i></span>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="../sparse.html">Sparse Matrices</a><input checked class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="bsparse.sparse.COO.html">bsparse.sparse.COO</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bsparse.sparse.CSR.html">bsparse.sparse.CSR</a></li>
+<li class="toctree-l2 current active has-children"><a class="current reference internal" href="#">bsparse.sparse.DIA</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="bsparse.sparse.DIA.astype.html">bsparse.sparse.DIA.astype</a></li>
+<li class="toctree-l3"><a class="reference internal" href="bsparse.sparse.DIA.conj.html">bsparse.sparse.DIA.conj</a></li>
+<li class="toctree-l3"><a class="reference internal" href="bsparse.sparse.DIA.conjugate.html">bsparse.sparse.DIA.conjugate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="bsparse.sparse.DIA.copy.html">bsparse.sparse.DIA.copy</a></li>
+<li class="toctree-l3"><a class="reference internal" href="bsparse.sparse.DIA.diagonal.html">bsparse.sparse.DIA.diagonal</a></li>
+<li class="toctree-l3"><a class="reference internal" href="bsparse.sparse.DIA.from_array.html">bsparse.sparse.DIA.from_array</a></li>
+<li class="toctree-l3"><a class="reference internal" href="bsparse.sparse.DIA.from_sparray.html">bsparse.sparse.DIA.from_sparray</a></li>
+<li class="toctree-l3"><a class="reference internal" href="bsparse.sparse.DIA.save_npz.html">bsparse.sparse.DIA.save_npz</a></li>
+<li class="toctree-l3"><a class="reference internal" href="bsparse.sparse.DIA.toarray.html">bsparse.sparse.DIA.toarray</a></li>
+<li class="toctree-l3"><a class="reference internal" href="bsparse.sparse.DIA.tocoo.html">bsparse.sparse.DIA.tocoo</a></li>
+<li class="toctree-l3"><a class="reference internal" href="bsparse.sparse.DIA.tocsr.html">bsparse.sparse.DIA.tocsr</a></li>
+<li class="toctree-l3"><a class="reference internal" href="bsparse.sparse.DIA.todia.html">bsparse.sparse.DIA.todia</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../sparse.routines.html">Routines</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../bsparse.html">Sparse Matrix Containers</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+
+
+<nav aria-label="Breadcrumb">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../index.html" class="nav-link">API Reference</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="../sparse.html" class="nav-link">Sparse Matrices</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page">bsparse.sparse.DIA</li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="bsparse-sparse-dia">
+<h1>bsparse.sparse.DIA<a class="headerlink" href="#bsparse-sparse-dia" title="Permalink to this heading">#</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="bsparse.sparse.DIA">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DIA</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">offsets</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shape</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symmetry</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bsparse.sparse.DIA" title="Permalink to this definition">#</a></dt>
+<dd><p>A sparse matrix in DIAgonal format.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">DIA</span></code> class represents a sparse matrix using two arrays:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">offsets</span></code>: the offsets of the diagonals, where zero indicates
+the main diagonal, positive values are above the main diagonal,
+and negative values are below the main diagonal.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">data</span></code>: the values of the diagonals, padded with zeros so that
+each diagonal has the same length.</p></li>
+</ul>
+<figure class="align-default">
+<a class="reference internal image-reference" href="../../_images/dia.jpg"><img alt="../../_images/dia.jpg" src="../../_images/dia.jpg" style="width: 287.5px; height: 151.25px;" /></a>
+</figure>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>offsets</strong><span class="classifier">array_like</span></dt><dd><p>The offsets of the diagonals.</p>
+</dd>
+<dt><strong>data</strong><span class="classifier">array_like</span></dt><dd><p>The values of the diagonals.</p>
+</dd>
+<dt><strong>shape</strong><span class="classifier">tuple[int, int], optional</span></dt><dd><p>The shape of the matrix. If not given, it is inferred from the
+offsets and data.</p>
+</dd>
+<dt><strong>dtype</strong><span class="classifier">dtype, optional</span></dt><dd><p>The data type of the matrix. If not given, it is inferred from
+the data.</p>
+</dd>
+<dt><strong>symmetry</strong><span class="classifier">str, optional</span></dt><dd><p>The symmetry of the matrix. If not given, no symmetry is
+assumed. This is only applicable for square matrices, where
+possible values are <code class="docutils literal notranslate"><span class="pre">'symmetric'</span></code> and <code class="docutils literal notranslate"><span class="pre">'hermitian'</span></code>. Note
+that when setting a symmetry, the lower triangular part of the
+matrix is discarded.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>Construct a sparse matrix from dense arrays:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dia</span> <span class="o">=</span> <span class="n">DIA</span><span class="o">.</span><span class="n">from_array</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dia</span>
+<span class="go">DIA(shape=(3, 3), nnz=6, dtype=float64)</span>
+</pre></div>
+</div>
+<p>Convert the matrix to a dense array:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">dia</span><span class="o">.</span><span class="n">toarray</span><span class="p">()</span> 
+<span class="go">array([[1., 1., 0.], [0., 1., 1.], [0., 0., 1.]])</span>
+</pre></div>
+</div>
+<p>Look at the underlying data:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">dia</span><span class="o">.</span><span class="n">offsets</span> 
+<span class="go">array([0, 1])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dia</span><span class="o">.</span><span class="n">data</span> 
+<span class="go">array([[1., 1., 1.], [0., 1., 1.]])</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Attributes<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>offsets</strong><span class="classifier">ndarray</span></dt><dd><p>The offsets of the diagonals.</p>
+</dd>
+<dt><strong>data</strong><span class="classifier">ndarray</span></dt><dd><p>The values of the diagonals.</p>
+</dd>
+<dt><a class="reference internal" href="bsparse.sparse.DIA.shape.html#bsparse.sparse.DIA.shape" title="bsparse.sparse.DIA.shape"><code class="xref py py-obj docutils literal notranslate"><span class="pre">shape</span></code></a><span class="classifier">tuple[int, int]</span></dt><dd><p>The shape of the matrix.</p>
+</dd>
+<dt><a class="reference internal" href="bsparse.sparse.DIA.dtype.html#bsparse.sparse.DIA.dtype" title="bsparse.sparse.DIA.dtype"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dtype</span></code></a><span class="classifier">dtype</span></dt><dd><p>The data type of the matrix elements.</p>
+</dd>
+<dt><a class="reference internal" href="bsparse.sparse.DIA.symmetry.html#bsparse.sparse.DIA.symmetry" title="bsparse.sparse.DIA.symmetry"><code class="xref py py-obj docutils literal notranslate"><span class="pre">symmetry</span></code></a><span class="classifier">str</span></dt><dd><p>The symmetry of the matrix.</p>
+</dd>
+<dt><a class="reference internal" href="bsparse.sparse.DIA.nnz.html#bsparse.sparse.DIA.nnz" title="bsparse.sparse.DIA.nnz"><code class="xref py py-obj docutils literal notranslate"><span class="pre">nnz</span></code></a><span class="classifier">int</span></dt><dd><p>The number of stored elements in the matrix.</p>
+</dd>
+<dt><a class="reference internal" href="bsparse.sparse.DIA.T.html#bsparse.sparse.DIA.T" title="bsparse.sparse.DIA.T"><code class="xref py py-obj docutils literal notranslate"><span class="pre">T</span></code></a><span class="classifier">DIA</span></dt><dd><p>The transpose of the matrix.</p>
+</dd>
+<dt><a class="reference internal" href="bsparse.sparse.DIA.H.html#bsparse.sparse.DIA.H" title="bsparse.sparse.DIA.H"><code class="xref py py-obj docutils literal notranslate"><span class="pre">H</span></code></a><span class="classifier">DIA</span></dt><dd><p>The conjugate transpose of the matrix.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="bsparse.sparse.DIA.astype.html#bsparse.sparse.DIA.astype" title="bsparse.sparse.DIA.astype"><code class="xref py py-obj docutils literal notranslate"><span class="pre">astype</span></code></a>(dtype)</p></td>
+<td><p>Returns a copy of the matrix with a different data type.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="bsparse.sparse.DIA.conj.html#bsparse.sparse.DIA.conj" title="bsparse.sparse.DIA.conj"><code class="xref py py-obj docutils literal notranslate"><span class="pre">conj</span></code></a>()</p></td>
+<td><p>The complex conjugate of the matrix.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="bsparse.sparse.DIA.conjugate.html#bsparse.sparse.DIA.conjugate" title="bsparse.sparse.DIA.conjugate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">conjugate</span></code></a>()</p></td>
+<td><p>The complex conjugate of the matrix.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="bsparse.sparse.DIA.copy.html#bsparse.sparse.DIA.copy" title="bsparse.sparse.DIA.copy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">copy</span></code></a>()</p></td>
+<td><p>Returns a copy of the matrix.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="bsparse.sparse.DIA.diagonal.html#bsparse.sparse.DIA.diagonal" title="bsparse.sparse.DIA.diagonal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">diagonal</span></code></a>([offset])</p></td>
+<td><p>Returns the diagonal of the matrix.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="bsparse.sparse.DIA.from_array.html#bsparse.sparse.DIA.from_array" title="bsparse.sparse.DIA.from_array"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_array</span></code></a>(arr[, symmetry])</p></td>
+<td><p>Creates a sparse matrix from a dense <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">numpy.ndarray</span></code></a>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="bsparse.sparse.DIA.from_sparray.html#bsparse.sparse.DIA.from_sparray" title="bsparse.sparse.DIA.from_sparray"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_sparray</span></code></a>(mat[, symmetry])</p></td>
+<td><p>Creates a sparse matrix from a <a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.sparray.html#scipy.sparse.sparray" title="(in SciPy v1.12.0)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">scipy.sparse.sparray</span></code></a>.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="bsparse.sparse.DIA.save_npz.html#bsparse.sparse.DIA.save_npz" title="bsparse.sparse.DIA.save_npz"><code class="xref py py-obj docutils literal notranslate"><span class="pre">save_npz</span></code></a>(filename)</p></td>
+<td><p>Saves the matrix as <code class="docutils literal notranslate"><span class="pre">.npz</span></code> archive.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="bsparse.sparse.DIA.toarray.html#bsparse.sparse.DIA.toarray" title="bsparse.sparse.DIA.toarray"><code class="xref py py-obj docutils literal notranslate"><span class="pre">toarray</span></code></a>()</p></td>
+<td><p>Returns a dense matrix.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="bsparse.sparse.DIA.tocoo.html#bsparse.sparse.DIA.tocoo" title="bsparse.sparse.DIA.tocoo"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tocoo</span></code></a>()</p></td>
+<td><p>Returns a COOrdinate representation of the matrix.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="bsparse.sparse.DIA.tocsr.html#bsparse.sparse.DIA.tocsr" title="bsparse.sparse.DIA.tocsr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tocsr</span></code></a>()</p></td>
+<td><p>Returns a Compressed Sparse Row representation of the matrix.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="bsparse.sparse.DIA.todia.html#bsparse.sparse.DIA.todia" title="bsparse.sparse.DIA.todia"><code class="xref py py-obj docutils literal notranslate"><span class="pre">todia</span></code></a>()</p></td>
+<td><p>Returns a DIAgonal representation of the matrix.</p></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="bsparse.sparse.CSR.todia.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">bsparse.sparse.CSR.todia</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="bsparse.sparse.DIA.astype.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">bsparse.sparse.DIA.astype</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../_static/scripts/bootstrap.js?digest=8d27b9dea8ad943066ae"></script>
+<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2024, Nicolas Vetsch.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.1.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.15.2.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

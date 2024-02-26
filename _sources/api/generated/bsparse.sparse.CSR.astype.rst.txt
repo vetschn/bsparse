@@ -1,0 +1,9 @@
+:orphan:
+
+bsparse.sparse.CSR.astype
+=========================
+
+.. currentmodule:: bsparse.sparse
+
+.. automethod:: bsparse::sparse.CSR.astype
+

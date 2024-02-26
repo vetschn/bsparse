@@ -1,0 +1,44 @@
+﻿bsparse.sparse.CSR
+==================
+
+.. currentmodule:: bsparse.sparse
+
+.. autoclass:: CSR
+
+   
+
+   .. HACK -- the point here is that we don't want this to appear in the output, but the autosummary should still generate the pages.
+      .. autosummary::
+         :toctree:
+      
+         CSR.astype
+         CSR.conj
+         CSR.conjugate
+         CSR.copy
+         CSR.diagonal
+         CSR.from_array
+         CSR.from_sparray
+         CSR.save_npz
+         CSR.toarray
+         CSR.tocoo
+         CSR.tocsr
+         CSR.todia
+
+
+
+   
+
+   .. HACK -- the point here is that we don't want this to appear in the output, but the autosummary should still generate the pages.
+      .. autosummary::
+         :toctree:
+      
+         CSR.H
+         CSR.T
+         CSR.dtype
+         CSR.imag
+         CSR.ndim
+         CSR.nnz
+         CSR.real
+         CSR.shape
+         CSR.symmetry
+

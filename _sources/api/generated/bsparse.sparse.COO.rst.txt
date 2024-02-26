@@ -1,0 +1,44 @@
+﻿bsparse.sparse.COO
+==================
+
+.. currentmodule:: bsparse.sparse
+
+.. autoclass:: COO
+
+   
+
+   .. HACK -- the point here is that we don't want this to appear in the output, but the autosummary should still generate the pages.
+      .. autosummary::
+         :toctree:
+      
+         COO.astype
+         COO.conj
+         COO.conjugate
+         COO.copy
+         COO.diagonal
+         COO.from_array
+         COO.from_sparray
+         COO.save_npz
+         COO.toarray
+         COO.tocoo
+         COO.tocsr
+         COO.todia
+
+
+
+   
+
+   .. HACK -- the point here is that we don't want this to appear in the output, but the autosummary should still generate the pages.
+      .. autosummary::
+         :toctree:
+      
+         COO.H
+         COO.T
+         COO.dtype
+         COO.imag
+         COO.ndim
+         COO.nnz
+         COO.real
+         COO.shape
+         COO.symmetry
+

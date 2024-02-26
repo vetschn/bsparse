@@ -1,0 +1,51 @@
+﻿bsparse.BDIA
+============
+
+.. currentmodule:: bsparse
+
+.. autoclass:: BDIA
+
+   
+
+   .. HACK -- the point here is that we don't want this to appear in the output, but the autosummary should still generate the pages.
+      .. autosummary::
+         :toctree:
+      
+         BDIA.asbformat
+         BDIA.astype
+         BDIA.bapply
+         BDIA.conj
+         BDIA.conjugate
+         BDIA.copy
+         BDIA.diagonal
+         BDIA.from_array
+         BDIA.from_sparray
+         BDIA.save_npz
+         BDIA.toarray
+         BDIA.tocoo
+         BDIA.tocsr
+         BDIA.todia
+
+
+
+   
+
+   .. HACK -- the point here is that we don't want this to appear in the output, but the autosummary should still generate the pages.
+      .. autosummary::
+         :toctree:
+      
+         BDIA.H
+         BDIA.T
+         BDIA.bnnz
+         BDIA.bshape
+         BDIA.col_sizes
+         BDIA.dtype
+         BDIA.imag
+         BDIA.ndim
+         BDIA.nnz
+         BDIA.real
+         BDIA.row_sizes
+         BDIA.shape
+         BDIA.sizes
+         BDIA.symmetry
+

@@ -1,0 +1,15 @@
+
+:orphan:
+
+
+bsparse.sparse.DIA.dtype
+========================
+
+.. currentmodule:: bsparse.sparse
+
+
+property
+
+
+.. autoproperty:: bsparse::sparse.DIA.dtype
+

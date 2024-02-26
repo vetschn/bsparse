@@ -1,0 +1,9 @@
+:orphan:
+
+bsparse.BCSR.copy
+=================
+
+.. currentmodule:: bsparse
+
+.. automethod:: bsparse::BCSR.copy
+

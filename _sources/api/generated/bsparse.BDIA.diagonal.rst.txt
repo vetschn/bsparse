@@ -1,0 +1,9 @@
+:orphan:
+
+bsparse.BDIA.diagonal
+=====================
+
+.. currentmodule:: bsparse
+
+.. automethod:: bsparse::BDIA.diagonal
+

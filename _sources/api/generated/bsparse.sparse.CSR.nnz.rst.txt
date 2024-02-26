@@ -1,0 +1,15 @@
+
+:orphan:
+
+
+bsparse.sparse.CSR.nnz
+======================
+
+.. currentmodule:: bsparse.sparse
+
+
+property
+
+
+.. autoproperty:: bsparse::sparse.CSR.nnz
+

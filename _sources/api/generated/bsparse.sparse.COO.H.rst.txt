@@ -1,0 +1,15 @@
+
+:orphan:
+
+
+bsparse.sparse.COO.H
+====================
+
+.. currentmodule:: bsparse.sparse
+
+
+property
+
+
+.. autoproperty:: bsparse::sparse.COO.H
+

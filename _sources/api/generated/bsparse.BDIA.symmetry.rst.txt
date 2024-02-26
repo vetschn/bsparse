@@ -1,0 +1,15 @@
+
+:orphan:
+
+
+bsparse.BDIA.symmetry
+=====================
+
+.. currentmodule:: bsparse
+
+
+property
+
+
+.. autoproperty:: bsparse::BDIA.symmetry
+

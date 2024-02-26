@@ -1,0 +1,919 @@
+
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="" data-theme="light">
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Index &#8212; bsparse 0.1.3 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "light";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
+<link href="_static/styles/bootstrap.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
+
+  
+  <link href="_static/vendor/fontawesome/6.5.1/css/all.min.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.1/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.1/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.1/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css" />
+    <link rel="stylesheet" type="text/css" href="_static/bsparse.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8d27b9dea8ad943066ae" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
+  <script src="_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
+
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/design-tabs.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'genindex';</script>
+    <link rel="icon" href="_static/favicon.ico"/>
+    <link rel="index" title="Index" href="#" />
+    <link rel="search" title="Search" href="search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="light">
+
+  
+  
+  <a id="pst-skip-link" class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>
+    Back to top
+  </button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar">
+<div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+    <span class="fa-solid fa-bars"></span>
+  </label>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+
+<a class="navbar-brand logo" href="index.html">
+  
+  
+  
+  
+  
+    
+    
+    
+    <img src="_static/bsparse_logo.png" class="logo__image only-light" alt="bsparse 0.1.3 documentation - Home"/>
+    <script>document.write(`<img src="_static/bsparse_logo_dark.png" class="logo__image only-dark" alt="bsparse 0.1.3 documentation - Home"/>`);</script>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav class="navbar-nav">
+  <ul class="bd-navbar-elements navbar-nav">
+    
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="user/index.html">
+                        User Guide
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="api/index.html">
+                        API Reference
+                      </a>
+                    </li>
+                
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+ <script>
+ document.write(`
+   <button class="btn navbar-btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  </button>
+`);
+</script></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links navbar-nav"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/vetschn/bsparse" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><span><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i></span>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+ <script>
+ document.write(`
+   <button class="btn navbar-btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <div class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          <div class="navbar-item">
+<nav class="navbar-nav">
+  <ul class="bd-navbar-elements navbar-nav">
+    
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="user/index.html">
+                        User Guide
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="api/index.html">
+                        API Reference
+                      </a>
+                    </li>
+                
+  </ul>
+</nav></div>
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  </button>
+`);
+</script></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links navbar-nav"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/vetschn/bsparse" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><span><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i></span>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article"></div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+
+<h1 id="index">Index</h1>
+
+<div class="genindex-jumpbox">
+ <a href="#A"><strong>A</strong></a>
+ | <a href="#B"><strong>B</strong></a>
+ | <a href="#C"><strong>C</strong></a>
+ | <a href="#D"><strong>D</strong></a>
+ | <a href="#E"><strong>E</strong></a>
+ | <a href="#F"><strong>F</strong></a>
+ | <a href="#H"><strong>H</strong></a>
+ | <a href="#I"><strong>I</strong></a>
+ | <a href="#L"><strong>L</strong></a>
+ | <a href="#M"><strong>M</strong></a>
+ | <a href="#N"><strong>N</strong></a>
+ | <a href="#R"><strong>R</strong></a>
+ | <a href="#S"><strong>S</strong></a>
+ | <a href="#T"><strong>T</strong></a>
+ | <a href="#Z"><strong>Z</strong></a>
+ 
+</div>
+<h2 id="A">A</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/generated/bsparse.BCOO.asbformat.html#bsparse.BCOO.asbformat">asbformat() (BCOO method)</a>
+
+      <ul>
+        <li><a href="api/generated/bsparse.BCSR.asbformat.html#bsparse.BCSR.asbformat">(BCSR method)</a>
+</li>
+        <li><a href="api/generated/bsparse.BDIA.asbformat.html#bsparse.BDIA.asbformat">(BDIA method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/generated/bsparse.BCOO.astype.html#bsparse.BCOO.astype">astype() (BCOO method)</a>
+
+      <ul>
+        <li><a href="api/generated/bsparse.BCSR.astype.html#bsparse.BCSR.astype">(BCSR method)</a>
+</li>
+        <li><a href="api/generated/bsparse.BDIA.astype.html#bsparse.BDIA.astype">(BDIA method)</a>
+</li>
+        <li><a href="api/generated/bsparse.sparse.COO.astype.html#bsparse.sparse.COO.astype">(sparse.COO method)</a>
+</li>
+        <li><a href="api/generated/bsparse.sparse.CSR.astype.html#bsparse.sparse.CSR.astype">(sparse.CSR method)</a>
+</li>
+        <li><a href="api/generated/bsparse.sparse.DIA.astype.html#bsparse.sparse.DIA.astype">(sparse.DIA method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="B">B</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/generated/bsparse.BCOO.bapply.html#bsparse.BCOO.bapply">bapply() (BCOO method)</a>
+
+      <ul>
+        <li><a href="api/generated/bsparse.BCSR.bapply.html#bsparse.BCSR.bapply">(BCSR method)</a>
+</li>
+        <li><a href="api/generated/bsparse.BDIA.bapply.html#bsparse.BDIA.bapply">(BDIA method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/generated/bsparse.BCOO.html#bsparse.BCOO">BCOO (class in bsparse)</a>
+</li>
+      <li><a href="api/generated/bsparse.BCSR.html#bsparse.BCSR">BCSR (class in bsparse)</a>
+</li>
+      <li><a href="api/generated/bsparse.BDIA.html#bsparse.BDIA">BDIA (class in bsparse)</a>
+</li>
+      <li><a href="api/generated/bsparse.BCOO.bnnz.html#bsparse.BCOO.bnnz">bnnz (BCOO property)</a>
+
+      <ul>
+        <li><a href="api/generated/bsparse.BCSR.bnnz.html#bsparse.BCSR.bnnz">(BCSR property)</a>
+</li>
+        <li><a href="api/generated/bsparse.BDIA.bnnz.html#bsparse.BDIA.bnnz">(BDIA property)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/generated/bsparse.BCOO.bshape.html#bsparse.BCOO.bshape">bshape (BCOO property)</a>
+
+      <ul>
+        <li><a href="api/generated/bsparse.BCSR.bshape.html#bsparse.BCSR.bshape">(BCSR property)</a>
+</li>
+        <li><a href="api/generated/bsparse.BDIA.bshape.html#bsparse.BDIA.bshape">(BDIA property)</a>
+</li>
+      </ul></li>
+      <li>
+    bsparse
+
+      <ul>
+        <li><a href="api/index.html#module-bsparse">module</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="C">C</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/generated/bsparse.BCOO.col_sizes.html#bsparse.BCOO.col_sizes">col_sizes (BCOO property)</a>
+
+      <ul>
+        <li><a href="api/generated/bsparse.BCSR.col_sizes.html#bsparse.BCSR.col_sizes">(BCSR property)</a>
+</li>
+        <li><a href="api/generated/bsparse.BDIA.col_sizes.html#bsparse.BDIA.col_sizes">(BDIA property)</a>
+</li>
+      </ul></li>
+      <li><a href="api/generated/bsparse.BCOO.conj.html#bsparse.BCOO.conj">conj() (BCOO method)</a>
+
+      <ul>
+        <li><a href="api/generated/bsparse.BCSR.conj.html#bsparse.BCSR.conj">(BCSR method)</a>
+</li>
+        <li><a href="api/generated/bsparse.BDIA.conj.html#bsparse.BDIA.conj">(BDIA method)</a>
+</li>
+        <li><a href="api/generated/bsparse.sparse.COO.conj.html#bsparse.sparse.COO.conj">(sparse.COO method)</a>
+</li>
+        <li><a href="api/generated/bsparse.sparse.CSR.conj.html#bsparse.sparse.CSR.conj">(sparse.CSR method)</a>
+</li>
+        <li><a href="api/generated/bsparse.sparse.DIA.conj.html#bsparse.sparse.DIA.conj">(sparse.DIA method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/generated/bsparse.BCOO.conjugate.html#bsparse.BCOO.conjugate">conjugate() (BCOO method)</a>
+
+      <ul>
+        <li><a href="api/generated/bsparse.BCSR.conjugate.html#bsparse.BCSR.conjugate">(BCSR method)</a>
+</li>
+        <li><a href="api/generated/bsparse.BDIA.conjugate.html#bsparse.BDIA.conjugate">(BDIA method)</a>
+</li>
+        <li><a href="api/generated/bsparse.sparse.COO.conjugate.html#bsparse.sparse.COO.conjugate">(sparse.COO method)</a>
+</li>
+        <li><a href="api/generated/bsparse.sparse.CSR.conjugate.html#bsparse.sparse.CSR.conjugate">(sparse.CSR method)</a>
+</li>
+        <li><a href="api/generated/bsparse.sparse.DIA.conjugate.html#bsparse.sparse.DIA.conjugate">(sparse.DIA method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/generated/bsparse.sparse.COO.html#bsparse.sparse.COO">COO (class in bsparse.sparse)</a>
+</li>
+      <li><a href="api/generated/bsparse.BCOO.copy.html#bsparse.BCOO.copy">copy() (BCOO method)</a>
+
+      <ul>
+        <li><a href="api/generated/bsparse.BCSR.copy.html#bsparse.BCSR.copy">(BCSR method)</a>
+</li>
+        <li><a href="api/generated/bsparse.BDIA.copy.html#bsparse.BDIA.copy">(BDIA method)</a>
+</li>
+        <li><a href="api/generated/bsparse.sparse.COO.copy.html#bsparse.sparse.COO.copy">(sparse.COO method)</a>
+</li>
+        <li><a href="api/generated/bsparse.sparse.CSR.copy.html#bsparse.sparse.CSR.copy">(sparse.CSR method)</a>
+</li>
+        <li><a href="api/generated/bsparse.sparse.DIA.copy.html#bsparse.sparse.DIA.copy">(sparse.DIA method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/generated/bsparse.sparse.CSR.html#bsparse.sparse.CSR">CSR (class in bsparse.sparse)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="D">D</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/generated/bsparse.sparse.DIA.html#bsparse.sparse.DIA">DIA (class in bsparse.sparse)</a>
+</li>
+      <li><a href="api/generated/bsparse.diag.html#bsparse.diag">diag() (in module bsparse)</a>
+</li>
+      <li><a href="api/generated/bsparse.BCOO.diagonal.html#bsparse.BCOO.diagonal">diagonal() (BCOO method)</a>
+
+      <ul>
+        <li><a href="api/generated/bsparse.BCSR.diagonal.html#bsparse.BCSR.diagonal">(BCSR method)</a>
+</li>
+        <li><a href="api/generated/bsparse.BDIA.diagonal.html#bsparse.BDIA.diagonal">(BDIA method)</a>
+</li>
+        <li><a href="api/generated/bsparse.sparse.COO.diagonal.html#bsparse.sparse.COO.diagonal">(sparse.COO method)</a>
+</li>
+        <li><a href="api/generated/bsparse.sparse.CSR.diagonal.html#bsparse.sparse.CSR.diagonal">(sparse.CSR method)</a>
+</li>
+        <li><a href="api/generated/bsparse.sparse.DIA.diagonal.html#bsparse.sparse.DIA.diagonal">(sparse.DIA method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/generated/bsparse.BCOO.dtype.html#bsparse.BCOO.dtype">dtype (BCOO property)</a>
+
+      <ul>
+        <li><a href="api/generated/bsparse.BCSR.dtype.html#bsparse.BCSR.dtype">(BCSR property)</a>
+</li>
+        <li><a href="api/generated/bsparse.BDIA.dtype.html#bsparse.BDIA.dtype">(BDIA property)</a>
+</li>
+        <li><a href="api/generated/bsparse.sparse.COO.dtype.html#bsparse.sparse.COO.dtype">(sparse.COO property)</a>
+</li>
+        <li><a href="api/generated/bsparse.sparse.CSR.dtype.html#bsparse.sparse.CSR.dtype">(sparse.CSR property)</a>
+</li>
+        <li><a href="api/generated/bsparse.sparse.DIA.dtype.html#bsparse.sparse.DIA.dtype">(sparse.DIA property)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="E">E</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/generated/bsparse.eye.html#bsparse.eye">eye() (in module bsparse)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="F">F</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/generated/bsparse.BCOO.from_array.html#bsparse.BCOO.from_array">from_array() (BCOO class method)</a>
+
+      <ul>
+        <li><a href="api/generated/bsparse.BCSR.from_array.html#bsparse.BCSR.from_array">(BCSR class method)</a>
+</li>
+        <li><a href="api/generated/bsparse.BDIA.from_array.html#bsparse.BDIA.from_array">(BDIA class method)</a>
+</li>
+        <li><a href="api/generated/bsparse.sparse.COO.from_array.html#bsparse.sparse.COO.from_array">(sparse.COO class method)</a>
+</li>
+        <li><a href="api/generated/bsparse.sparse.CSR.from_array.html#bsparse.sparse.CSR.from_array">(sparse.CSR class method)</a>
+</li>
+        <li><a href="api/generated/bsparse.sparse.DIA.from_array.html#bsparse.sparse.DIA.from_array">(sparse.DIA class method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/generated/bsparse.BCOO.from_sparray.html#bsparse.BCOO.from_sparray">from_sparray() (BCOO class method)</a>
+
+      <ul>
+        <li><a href="api/generated/bsparse.BCSR.from_sparray.html#bsparse.BCSR.from_sparray">(BCSR class method)</a>
+</li>
+        <li><a href="api/generated/bsparse.BDIA.from_sparray.html#bsparse.BDIA.from_sparray">(BDIA class method)</a>
+</li>
+        <li><a href="api/generated/bsparse.sparse.COO.from_sparray.html#bsparse.sparse.COO.from_sparray">(sparse.COO class method)</a>
+</li>
+        <li><a href="api/generated/bsparse.sparse.CSR.from_sparray.html#bsparse.sparse.CSR.from_sparray">(sparse.CSR class method)</a>
+</li>
+        <li><a href="api/generated/bsparse.sparse.DIA.from_sparray.html#bsparse.sparse.DIA.from_sparray">(sparse.DIA class method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="H">H</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/generated/bsparse.BCOO.H.html#bsparse.BCOO.H">H (BCOO property)</a>
+
+      <ul>
+        <li><a href="api/generated/bsparse.BCSR.H.html#bsparse.BCSR.H">(BCSR property)</a>
+</li>
+        <li><a href="api/generated/bsparse.BDIA.H.html#bsparse.BDIA.H">(BDIA property)</a>
+</li>
+        <li><a href="api/generated/bsparse.sparse.COO.H.html#bsparse.sparse.COO.H">(sparse.COO property)</a>
+</li>
+        <li><a href="api/generated/bsparse.sparse.CSR.H.html#bsparse.sparse.CSR.H">(sparse.CSR property)</a>
+</li>
+        <li><a href="api/generated/bsparse.sparse.DIA.H.html#bsparse.sparse.DIA.H">(sparse.DIA property)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="I">I</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/generated/bsparse.BCOO.imag.html#bsparse.BCOO.imag">imag (BCOO property)</a>
+
+      <ul>
+        <li><a href="api/generated/bsparse.BCSR.imag.html#bsparse.BCSR.imag">(BCSR property)</a>
+</li>
+        <li><a href="api/generated/bsparse.BDIA.imag.html#bsparse.BDIA.imag">(BDIA property)</a>
+</li>
+        <li><a href="api/generated/bsparse.sparse.COO.imag.html#bsparse.sparse.COO.imag">(sparse.COO property)</a>
+</li>
+        <li><a href="api/generated/bsparse.sparse.CSR.imag.html#bsparse.sparse.CSR.imag">(sparse.CSR property)</a>
+</li>
+        <li><a href="api/generated/bsparse.sparse.DIA.imag.html#bsparse.sparse.DIA.imag">(sparse.DIA property)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="L">L</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/generated/bsparse.load_npz.html#bsparse.load_npz">load_npz() (in module bsparse)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="M">M</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
+    module
+
+      <ul>
+        <li><a href="api/index.html#module-bsparse">bsparse</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="N">N</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/generated/bsparse.BCOO.ndim.html#bsparse.BCOO.ndim">ndim (BCOO attribute)</a>
+
+      <ul>
+        <li><a href="api/generated/bsparse.BCSR.ndim.html#bsparse.BCSR.ndim">(BCSR attribute)</a>
+</li>
+        <li><a href="api/generated/bsparse.BDIA.ndim.html#bsparse.BDIA.ndim">(BDIA attribute)</a>
+</li>
+        <li><a href="api/generated/bsparse.sparse.COO.ndim.html#bsparse.sparse.COO.ndim">(sparse.COO attribute)</a>
+</li>
+        <li><a href="api/generated/bsparse.sparse.CSR.ndim.html#bsparse.sparse.CSR.ndim">(sparse.CSR attribute)</a>
+</li>
+        <li><a href="api/generated/bsparse.sparse.DIA.ndim.html#bsparse.sparse.DIA.ndim">(sparse.DIA attribute)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/generated/bsparse.BCOO.nnz.html#bsparse.BCOO.nnz">nnz (BCOO property)</a>
+
+      <ul>
+        <li><a href="api/generated/bsparse.BCSR.nnz.html#bsparse.BCSR.nnz">(BCSR property)</a>
+</li>
+        <li><a href="api/generated/bsparse.BDIA.nnz.html#bsparse.BDIA.nnz">(BDIA property)</a>
+</li>
+        <li><a href="api/generated/bsparse.sparse.COO.nnz.html#bsparse.sparse.COO.nnz">(sparse.COO property)</a>
+</li>
+        <li><a href="api/generated/bsparse.sparse.CSR.nnz.html#bsparse.sparse.CSR.nnz">(sparse.CSR property)</a>
+</li>
+        <li><a href="api/generated/bsparse.sparse.DIA.nnz.html#bsparse.sparse.DIA.nnz">(sparse.DIA property)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="R">R</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/generated/bsparse.random.html#bsparse.random">random() (in module bsparse)</a>
+</li>
+      <li><a href="api/generated/bsparse.BCOO.real.html#bsparse.BCOO.real">real (BCOO property)</a>
+
+      <ul>
+        <li><a href="api/generated/bsparse.BCSR.real.html#bsparse.BCSR.real">(BCSR property)</a>
+</li>
+        <li><a href="api/generated/bsparse.BDIA.real.html#bsparse.BDIA.real">(BDIA property)</a>
+</li>
+        <li><a href="api/generated/bsparse.sparse.COO.real.html#bsparse.sparse.COO.real">(sparse.COO property)</a>
+</li>
+        <li><a href="api/generated/bsparse.sparse.CSR.real.html#bsparse.sparse.CSR.real">(sparse.CSR property)</a>
+</li>
+        <li><a href="api/generated/bsparse.sparse.DIA.real.html#bsparse.sparse.DIA.real">(sparse.DIA property)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/generated/bsparse.BCOO.row_sizes.html#bsparse.BCOO.row_sizes">row_sizes (BCOO property)</a>
+
+      <ul>
+        <li><a href="api/generated/bsparse.BCSR.row_sizes.html#bsparse.BCSR.row_sizes">(BCSR property)</a>
+</li>
+        <li><a href="api/generated/bsparse.BDIA.row_sizes.html#bsparse.BDIA.row_sizes">(BDIA property)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="S">S</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/generated/bsparse.BCOO.save_npz.html#bsparse.BCOO.save_npz">save_npz() (BCOO method)</a>
+
+      <ul>
+        <li><a href="api/generated/bsparse.BCSR.save_npz.html#bsparse.BCSR.save_npz">(BCSR method)</a>
+</li>
+        <li><a href="api/generated/bsparse.BDIA.save_npz.html#bsparse.BDIA.save_npz">(BDIA method)</a>
+</li>
+        <li><a href="api/generated/bsparse.sparse.COO.save_npz.html#bsparse.sparse.COO.save_npz">(sparse.COO method)</a>
+</li>
+        <li><a href="api/generated/bsparse.sparse.CSR.save_npz.html#bsparse.sparse.CSR.save_npz">(sparse.CSR method)</a>
+</li>
+        <li><a href="api/generated/bsparse.sparse.DIA.save_npz.html#bsparse.sparse.DIA.save_npz">(sparse.DIA method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/generated/bsparse.BCOO.shape.html#bsparse.BCOO.shape">shape (BCOO property)</a>
+
+      <ul>
+        <li><a href="api/generated/bsparse.BCSR.shape.html#bsparse.BCSR.shape">(BCSR property)</a>
+</li>
+        <li><a href="api/generated/bsparse.BDIA.shape.html#bsparse.BDIA.shape">(BDIA property)</a>
+</li>
+        <li><a href="api/generated/bsparse.sparse.COO.shape.html#bsparse.sparse.COO.shape">(sparse.COO property)</a>
+</li>
+        <li><a href="api/generated/bsparse.sparse.CSR.shape.html#bsparse.sparse.CSR.shape">(sparse.CSR property)</a>
+</li>
+        <li><a href="api/generated/bsparse.sparse.DIA.shape.html#bsparse.sparse.DIA.shape">(sparse.DIA property)</a>
+</li>
+      </ul></li>
+      <li><a href="api/generated/bsparse.BCOO.sizes.html#bsparse.BCOO.sizes">sizes (BCOO property)</a>
+
+      <ul>
+        <li><a href="api/generated/bsparse.BCSR.sizes.html#bsparse.BCSR.sizes">(BCSR property)</a>
+</li>
+        <li><a href="api/generated/bsparse.BDIA.sizes.html#bsparse.BDIA.sizes">(BDIA property)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/generated/bsparse.sparse.diag.html#bsparse.sparse.diag">sparse.diag() (in module bsparse)</a>
+</li>
+      <li><a href="api/generated/bsparse.sparse.eye.html#bsparse.sparse.eye">sparse.eye() (in module bsparse)</a>
+</li>
+      <li><a href="api/generated/bsparse.sparse.load_npz.html#bsparse.sparse.load_npz">sparse.load_npz() (in module bsparse)</a>
+</li>
+      <li><a href="api/generated/bsparse.sparse.random.html#bsparse.sparse.random">sparse.random() (in module bsparse)</a>
+</li>
+      <li><a href="api/generated/bsparse.sparse.zeros.html#bsparse.sparse.zeros">sparse.zeros() (in module bsparse)</a>
+</li>
+      <li><a href="api/generated/bsparse.BCOO.symmetry.html#bsparse.BCOO.symmetry">symmetry (BCOO property)</a>
+
+      <ul>
+        <li><a href="api/generated/bsparse.BCSR.symmetry.html#bsparse.BCSR.symmetry">(BCSR property)</a>
+</li>
+        <li><a href="api/generated/bsparse.BDIA.symmetry.html#bsparse.BDIA.symmetry">(BDIA property)</a>
+</li>
+        <li><a href="api/generated/bsparse.sparse.COO.symmetry.html#bsparse.sparse.COO.symmetry">(sparse.COO property)</a>
+</li>
+        <li><a href="api/generated/bsparse.sparse.CSR.symmetry.html#bsparse.sparse.CSR.symmetry">(sparse.CSR property)</a>
+</li>
+        <li><a href="api/generated/bsparse.sparse.DIA.symmetry.html#bsparse.sparse.DIA.symmetry">(sparse.DIA property)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="T">T</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/generated/bsparse.BCOO.T.html#bsparse.BCOO.T">T (BCOO property)</a>
+
+      <ul>
+        <li><a href="api/generated/bsparse.BCSR.T.html#bsparse.BCSR.T">(BCSR property)</a>
+</li>
+        <li><a href="api/generated/bsparse.BDIA.T.html#bsparse.BDIA.T">(BDIA property)</a>
+</li>
+        <li><a href="api/generated/bsparse.sparse.COO.T.html#bsparse.sparse.COO.T">(sparse.COO property)</a>
+</li>
+        <li><a href="api/generated/bsparse.sparse.CSR.T.html#bsparse.sparse.CSR.T">(sparse.CSR property)</a>
+</li>
+        <li><a href="api/generated/bsparse.sparse.DIA.T.html#bsparse.sparse.DIA.T">(sparse.DIA property)</a>
+</li>
+      </ul></li>
+      <li><a href="api/generated/bsparse.BCOO.toarray.html#bsparse.BCOO.toarray">toarray() (BCOO method)</a>
+
+      <ul>
+        <li><a href="api/generated/bsparse.BCSR.toarray.html#bsparse.BCSR.toarray">(BCSR method)</a>
+</li>
+        <li><a href="api/generated/bsparse.BDIA.toarray.html#bsparse.BDIA.toarray">(BDIA method)</a>
+</li>
+        <li><a href="api/generated/bsparse.sparse.COO.toarray.html#bsparse.sparse.COO.toarray">(sparse.COO method)</a>
+</li>
+        <li><a href="api/generated/bsparse.sparse.CSR.toarray.html#bsparse.sparse.CSR.toarray">(sparse.CSR method)</a>
+</li>
+        <li><a href="api/generated/bsparse.sparse.DIA.toarray.html#bsparse.sparse.DIA.toarray">(sparse.DIA method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/generated/bsparse.BCOO.tocoo.html#bsparse.BCOO.tocoo">tocoo() (BCOO method)</a>
+
+      <ul>
+        <li><a href="api/generated/bsparse.BCSR.tocoo.html#bsparse.BCSR.tocoo">(BCSR method)</a>
+</li>
+        <li><a href="api/generated/bsparse.BDIA.tocoo.html#bsparse.BDIA.tocoo">(BDIA method)</a>
+</li>
+        <li><a href="api/generated/bsparse.sparse.COO.tocoo.html#bsparse.sparse.COO.tocoo">(sparse.COO method)</a>
+</li>
+        <li><a href="api/generated/bsparse.sparse.CSR.tocoo.html#bsparse.sparse.CSR.tocoo">(sparse.CSR method)</a>
+</li>
+        <li><a href="api/generated/bsparse.sparse.DIA.tocoo.html#bsparse.sparse.DIA.tocoo">(sparse.DIA method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/generated/bsparse.BCOO.tocsr.html#bsparse.BCOO.tocsr">tocsr() (BCOO method)</a>
+
+      <ul>
+        <li><a href="api/generated/bsparse.BCSR.tocsr.html#bsparse.BCSR.tocsr">(BCSR method)</a>
+</li>
+        <li><a href="api/generated/bsparse.BDIA.tocsr.html#bsparse.BDIA.tocsr">(BDIA method)</a>
+</li>
+        <li><a href="api/generated/bsparse.sparse.COO.tocsr.html#bsparse.sparse.COO.tocsr">(sparse.COO method)</a>
+</li>
+        <li><a href="api/generated/bsparse.sparse.CSR.tocsr.html#bsparse.sparse.CSR.tocsr">(sparse.CSR method)</a>
+</li>
+        <li><a href="api/generated/bsparse.sparse.DIA.tocsr.html#bsparse.sparse.DIA.tocsr">(sparse.DIA method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/generated/bsparse.BCOO.todia.html#bsparse.BCOO.todia">todia() (BCOO method)</a>
+
+      <ul>
+        <li><a href="api/generated/bsparse.BCSR.todia.html#bsparse.BCSR.todia">(BCSR method)</a>
+</li>
+        <li><a href="api/generated/bsparse.BDIA.todia.html#bsparse.BDIA.todia">(BDIA method)</a>
+</li>
+        <li><a href="api/generated/bsparse.sparse.COO.todia.html#bsparse.sparse.COO.todia">(sparse.COO method)</a>
+</li>
+        <li><a href="api/generated/bsparse.sparse.CSR.todia.html#bsparse.sparse.CSR.todia">(sparse.CSR method)</a>
+</li>
+        <li><a href="api/generated/bsparse.sparse.DIA.todia.html#bsparse.sparse.DIA.todia">(sparse.DIA method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="Z">Z</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/generated/bsparse.zeros.html#bsparse.zeros">zeros() (in module bsparse)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="_static/scripts/bootstrap.js?digest=8d27b9dea8ad943066ae"></script>
+<script src="_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2024, Nicolas Vetsch.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.1.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.15.2.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

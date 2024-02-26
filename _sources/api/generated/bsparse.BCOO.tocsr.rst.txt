@@ -1,0 +1,9 @@
+:orphan:
+
+bsparse.BCOO.tocsr
+==================
+
+.. currentmodule:: bsparse
+
+.. automethod:: bsparse::BCOO.tocsr
+

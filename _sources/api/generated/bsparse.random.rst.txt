@@ -1,0 +1,11 @@
+﻿
+
+bsparse.random
+==============
+
+.. currentmodule:: bsparse
+
+
+
+.. autofunction:: bsparse::random
+

@@ -1,0 +1,9 @@
+:orphan:
+
+bsparse.BCOO.astype
+===================
+
+.. currentmodule:: bsparse
+
+.. automethod:: bsparse::BCOO.astype
+

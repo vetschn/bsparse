@@ -1,0 +1,9 @@
+:orphan:
+
+bsparse.BDIA.asbformat
+======================
+
+.. currentmodule:: bsparse
+
+.. automethod:: bsparse::BDIA.asbformat
+
